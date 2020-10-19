@@ -3,7 +3,7 @@ import { InternalError } from "../error/base.error"
 import { Result } from "../interface/result.interface";
 import { Users as UserInterface} from "../interface/user.interface"
 import { User } from "../model/user.model";
-import { ValidationError, UniqueConstraintError } from "sequelize";
+import { ValidationError, UniqueConstraintError, Op } from "sequelize";
 import { BadRequestError } from "../error/bad.request.error";
 import { RoleEnum } from "../utils/role.enum";
 import bcrypt from "bcrypt"
@@ -96,7 +96,25 @@ export class Users implements UserInterface{
             //Check if voter is valid before creating user
             let newVoter:Voter = new Voter(object.voter)
             await newVoter.validate()
-            
+
+            //Check if already exist a user with email and dni
+            let existVoter = await Voter.findOne({
+                where: { 
+                    [Op.or]: [
+                        { mail: object.voter.mail },
+                        { dni: object.voter.dni }
+                    ]
+                }
+            })
+
+            if(existVoter != null){
+                if(existVoter.mail == object.voter.mail){
+                    return Promise.reject(new BadRequestError("Mail is already registered"))
+                }else{
+                    return Promise.reject(new BadRequestError("Dni is already registered"))
+                }
+            }
+
             object.roleId = RoleEnum.VOTER
 
             let newUser = await User.create(object, {
