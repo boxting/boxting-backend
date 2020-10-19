@@ -1,0 +1,28 @@
+{
+  "name": "boxting-backend",
+  "version": "1.0.0",
+  "description": "Backend project for boxting app and admin web control panel",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boxting/boxting-backend.git"
+  },
+  "keywords": [
+    "blockchain-voting",
+    "node",
+    "sequelize",
+    "nodejs",
+    "express",
+    "typescript",
+    "backend"
+  ],
+  "author": "RodrigoAGM",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/boxting/boxting-backend/issues"
+  },
+  "homepage": "https://github.com/boxting/boxting-backend#readme"
+}
