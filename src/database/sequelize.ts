@@ -14,7 +14,8 @@ export class MySequelize{
         config()
         try {
             this.conn = new Sequelize({
-                sync: { force:true },
+                //sync: { force:true },
+                logging: false,
                 database: process.env.DATABASE_NAME,
                 username: process.env.DATABASE_USERNAME,
                 password: process.env.DATABASE_PASSWORD,

@@ -4,6 +4,7 @@ import Morgan from "morgan"
 import { json } from "body-parser"
 import { MySequelize } from "./database/sequelize";
 import { handleError } from "./middleware/error.middleware";
+import { users } from "./api/user.api"
 
 export class App{
 
@@ -31,6 +32,8 @@ export class App{
         this.app.get('/', json(), function (req, res) {
             res.send('Hello World!')
         })
+
+        this.app.use('/user', json(), users)
 
         this.app.use(handleError)
     }

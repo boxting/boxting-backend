@@ -27,8 +27,7 @@ export class Voter extends Model<Voter>{
         validate:{
             notEmpty:true,
             isNumeric:true,
-            min:8,
-            max:8
+            len:[8, 9]
         }
     })
     dni!: string
@@ -77,7 +76,7 @@ export class Voter extends Model<Voter>{
 
     @ForeignKey(() => User)
     @Column({
-        allowNull: false
+        allowNull: true
     })
     userId!: number
 }

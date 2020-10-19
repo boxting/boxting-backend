@@ -21,7 +21,7 @@ export class Organizer extends Model<Organizer>{
 
     @ForeignKey(() => User)
     @Column({
-        allowNull: false
+        allowNull: true
     })
     userId!: number
 }

@@ -7,6 +7,7 @@ import { ValidationError, UniqueConstraintError } from "sequelize";
 import { BadRequestError } from "../error/bad.request.error";
 import { RoleEnum } from "../utils/role.enum";
 import bcrypt from "bcrypt"
+import { Voter } from "../model/voter.model";
 
 export class Users implements UserInterface{
     
@@ -98,7 +99,6 @@ export class Users implements UserInterface{
 
     async registerVoter(object: User): Promise<Result> {
         try {
-                        
             if(object.voter == null){
                 return Promise.reject(new BadRequestError("You must include a voter {} to register a voter"))
             }
@@ -108,26 +108,28 @@ export class Users implements UserInterface{
             }else{
                 return Promise.reject(new BadRequestError(`password cannot be null`))
             }
-
+            
+            //Check if voter is valid before creating user
+            let newVoter:Voter = new Voter(object.voter)
+            await newVoter.validate()
+            
             object.roleId = RoleEnum.VOTER
 
             let newUser = await User.create(object, {
                 include: [{
-                    association: User.associations['voter']
+                        association: User.associations['voter']
                 }]
             })
-
+            
             return Promise.resolve({success: true, data: newUser})
         } catch (error) {
             let errorRes: Error
-
             if (error instanceof UniqueConstraintError){
                 errorRes = new BadRequestError("Username is already registered")
             }else if(error instanceof ValidationError){
-                let field = error.errors[0].path
-                errorRes = new BadRequestError(`${field} cannot be null`)
-            }
-            else{
+                let msg = error.errors[0].message
+                errorRes = new BadRequestError(msg)
+            }else{
                 errorRes = new InternalError(error)
             }
 
@@ -138,7 +140,7 @@ export class Users implements UserInterface{
     async registerOrganizer(object: User): Promise<Result> {
         try {
             
-            if(object.organizer == null){
+            if(object == null){
                 return Promise.reject(new BadRequestError("You must include a organizer {} to register an organizer"))
             }
 
@@ -165,8 +167,7 @@ export class Users implements UserInterface{
             }else if(error instanceof ValidationError){
                 let field = error.errors[0].path
                 errorRes = new BadRequestError(`${field} cannot be null`)
-            }
-            else{
+            }else{
                 errorRes = new InternalError(error)
             }
 
@@ -174,7 +175,7 @@ export class Users implements UserInterface{
         }
     }
 
-    async registerColaborator(object: User): Promise<Result> {
+    async registerCollaborator(object: User): Promise<Result> {
         try {
 
             if(object.password != null){
@@ -200,8 +201,7 @@ export class Users implements UserInterface{
             }else if(error instanceof ValidationError){
                 let field = error.errors[0].path
                 errorRes = new BadRequestError(`${field} cannot be null`)
-            }
-            else{
+            }else{
                 errorRes = new InternalError(error)
             }
 

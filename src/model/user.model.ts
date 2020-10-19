@@ -17,20 +17,14 @@ import { Voter } from "./voter.model"
                 attributes: {
                     exclude: ["createdAt", "updatedAt", "userId"],
                 },
-                required: false,
-                where: {
-                    val: NotNull
-                }
+                required: false
             },
             {
                 model: Organizer,
                 attributes: {
                     exclude: ["createdAt", "updatedAt", "userId"],
                 },
-                required: false,
-                where: {
-                    val: NotNull
-                }
+                required: false
             }
         ],
     },
@@ -59,9 +53,10 @@ export class User extends Model<User>{
     password!: string
 
     @Column({
-        allowNull: true
+        allowNull: true,
+        defaultValue: true
     })
-    isActive!: string
+    isActive!: boolean
 
     @CreatedAt
     createdAt!: Date
