@@ -28,7 +28,8 @@ export class Voter extends Model<Voter>{
             notEmpty:true,
             isNumeric:true,
             len:[8, 8]
-        }
+        },
+        unique: true
     })
     dni!: string
 
@@ -37,7 +38,8 @@ export class Voter extends Model<Voter>{
         validate:{
             notEmpty:true,
             isEmail:true
-        }
+        },
+        unique: true
     })
     mail!: string
 
