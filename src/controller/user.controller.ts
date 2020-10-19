@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import Status from "http-status-codes"
+import { Payload, TokenRequest } from "../interface/request.interface";
 import { User } from "../model/user.model";
 import { Users } from "../service/user.service";
 
@@ -110,6 +111,45 @@ export async function handleLoginOrganizer(req: Request, res: Response, next: Ne
         const {username, password} = req.body
         const data = await users.loginOrganizer(username, password)
         res.status(Status.CREATED).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleDeleteUserByToken(req: Request, res: Response, next: NextFunction) {
+    try {
+        const tokenRequest = req as TokenRequest
+        const id = tokenRequest.user.id.toString()
+        
+        const data = await users.delete(id)
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleGetUserByToken(req: Request, res: Response, next: NextFunction) {
+    try {
+        const tokenRequest = req as TokenRequest
+        const id = tokenRequest.user.id.toString()
+
+        const data = await users.getById(id)
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleUpdateUserByToken(req: Request, res: Response, next: NextFunction) {
+    try {
+        const tokenRequest = req as TokenRequest
+
+        const id = tokenRequest.user.id.toString()
+        const user:User = req.body
+
+        const data = await users.update(id, user)
+
+        res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
     }

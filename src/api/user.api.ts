@@ -10,15 +10,26 @@ import {
     handleRegisterCollaborators, 
     handleRegisterOrganizers, 
     handleRegisterVoters, 
-    handleUpdateUser } from "../controller/user.controller";
+    handleUpdateUser,
+    handleGetUserByToken,
+    handleDeleteUserByToken,
+    handleUpdateUserByToken} from "../controller/user.controller";
+import { authenticateToken } from "../middleware/jwt.middleware";
+import { authenticateRole } from "../middleware/role.middleware";
+import { RoleEnum } from "../utils/role.enum";
 
 const router = Router()
 
-router.get('/get/all', handleGetAllUsers)
-router.get('/:id', handleGetUserById) 
-router.delete('/delete/all', handleDeleteUsers)
-router.delete('/:id', handleDeleteUserById)
-router.put('/:id', handleUpdateUser)
+router.get('/get/all', authenticateToken, authenticateRole(RoleEnum.ADMIN), handleGetAllUsers)
+router.delete('/delete/all', authenticateToken, authenticateRole(RoleEnum.ADMIN), handleDeleteUsers)
+router.get('/:id', authenticateToken, authenticateRole(RoleEnum.ADMIN), handleGetUserById) 
+router.delete('/:id', authenticateToken, authenticateRole(RoleEnum.ADMIN), handleDeleteUserById)
+router.put('/:id', authenticateToken, authenticateRole(RoleEnum.ADMIN), handleUpdateUser)
+
+//Token based routes
+router.get('/token/:id', authenticateToken, handleGetUserByToken) 
+router.delete('/token/:id', authenticateToken, handleDeleteUserByToken)
+router.put('/token/:id', authenticateToken, handleUpdateUserByToken)
 
 //Register
 router.post('/voter/add', handleRegisterVoters)
