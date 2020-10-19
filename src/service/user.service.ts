@@ -11,6 +11,7 @@ import { Voter } from "../model/voter.model";
 import { Organizer } from "../model/organizer.model";
 import { clearData } from "../utils/clear.response";
 import { NotPermittedError } from "../error/not.permitted.error";
+import { createToken } from "../utils/create.token";
 
 export class Users implements UserInterface{
     
@@ -212,7 +213,6 @@ export class Users implements UserInterface{
             if( user == null ){
                 return Promise.reject(new BadRequestError("The username inserted is does not exist"))
             }
-            console.log(user.roleId)
 
             if(user.roleId != RoleEnum.VOTER){
                 return Promise.reject(new NotPermittedError())
@@ -222,8 +222,12 @@ export class Users implements UserInterface{
                 return Promise.reject(new BadRequestError("The password inserted is incorrect"))
             }
 
+            //get authentication token
+            const token = createToken(user)
+
             //remove null data
             const res = clearData(user)
+            res['token'] = token
 
             return Promise.resolve({success: true, data: res})
         } catch (error) {
@@ -247,8 +251,12 @@ export class Users implements UserInterface{
                 return Promise.reject(new BadRequestError("The password inserted is incorrect"))
             }
 
+            //get authentication token
+            const token = createToken(user)
+
             //remove null data
             const res = clearData(user)
+            res['token'] = token
 
             return Promise.resolve({success: true, data: res})
         } catch (error) {
@@ -272,8 +280,12 @@ export class Users implements UserInterface{
                 return Promise.reject(new BadRequestError("The password inserted is incorrect"))
             }
 
+            //get authentication token
+            const token = createToken(user)
+
             //remove null data
             const res = clearData(user)
+            res['token'] = token
 
             return Promise.resolve({success: true, data: res})
         } catch (error) {

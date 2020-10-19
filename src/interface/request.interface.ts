@@ -9,6 +9,6 @@ export interface Payload{
     id: number,
     username: string,
     role: number,
-    iat: number,
-    exp: number
+    iat?: number,
+    exp?: number
 }
