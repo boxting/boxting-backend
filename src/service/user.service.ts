@@ -8,13 +8,19 @@ import { BadRequestError } from "../error/bad.request.error";
 import { RoleEnum } from "../utils/role.enum";
 import bcrypt from "bcrypt"
 import { Voter } from "../model/voter.model";
+import { Organizer } from "../model/organizer.model";
+import { clearData } from "../utils/clear.response";
 
 export class Users implements UserInterface{
     
     async get(): Promise<Result> {
         try {
             let users = await User.scope('full').findAll()
-            return Promise.resolve({success: true, data: users})
+
+            //remove null data
+            const res = clearData(users)
+
+            return Promise.resolve({success: true, data: res})
         } catch (error) {
             return Promise.reject(new InternalError(error))
         }
@@ -32,7 +38,10 @@ export class Users implements UserInterface{
             object.roleId = RoleEnum.ADMIN
             let newUser = await User.create(object)
 
-            return Promise.resolve({success: true, data: newUser})
+            //remove null data
+            const res = clearData(newUser)
+
+            return Promise.resolve({success: true, data: res})
         } catch (error) {
             let errorRes: Error
 
@@ -52,7 +61,7 @@ export class Users implements UserInterface{
     
     async deleteAll(): Promise<Result> {
         try {
-            let deleted = await User.destroy()
+            let deleted = await User.destroy({where:{}})
             return Promise.resolve({success: true, data: `${deleted} objects deleted`})
         } catch (error) {
             return Promise.reject(new InternalError(error))
@@ -76,7 +85,10 @@ export class Users implements UserInterface{
                 return Promise.reject(new NotFoundError("No user found with this id"))
             }
 
-            return Promise.resolve({success: true, data: user})
+            //remove null data
+            const res = clearData(user)
+
+            return Promise.resolve({success: true, data: res})
         } catch (error) {
             return Promise.reject(new InternalError(error))
         }
@@ -92,7 +104,6 @@ export class Users implements UserInterface{
 
             return Promise.resolve({success: true, data: `User updated with ${changes} change(s)`})
         } catch (error) {
-            console.log(error)
             return Promise.reject(new InternalError(error))
         }
     }
@@ -120,8 +131,11 @@ export class Users implements UserInterface{
                         association: User.associations['voter']
                 }]
             })
-            
-            return Promise.resolve({success: true, data: newUser})
+
+            //remove null data
+            const res = clearData(newUser)
+                       
+            return Promise.resolve({success: true, data: res})
         } catch (error) {
             let errorRes: Error
             if (error instanceof UniqueConstraintError){
@@ -140,7 +154,7 @@ export class Users implements UserInterface{
     async registerOrganizer(object: User): Promise<Result> {
         try {
             
-            if(object == null){
+            if(object.organizer == null){
                 return Promise.reject(new BadRequestError("You must include a organizer {} to register an organizer"))
             }
 
@@ -150,6 +164,10 @@ export class Users implements UserInterface{
                 return Promise.reject(new BadRequestError(`password cannot be null`))
             }
 
+            //Check if organizer is valid before creating user
+            let newOrganizer:Organizer = new Organizer(object.organizer)
+            await newOrganizer.validate()
+
             object.roleId = RoleEnum.ORGANIZER
 
             let newUser = await User.create(object, {
@@ -158,15 +176,18 @@ export class Users implements UserInterface{
                 }]
             })
 
-            return Promise.resolve({success: true, data: newUser})
+            //remove null data
+            const res = clearData(newUser)
+
+            return Promise.resolve({success: true, data: res})
         } catch (error) {
             let errorRes: Error
 
             if (error instanceof UniqueConstraintError){
                 errorRes = new BadRequestError("Username is already registered")
             }else if(error instanceof ValidationError){
-                let field = error.errors[0].path
-                errorRes = new BadRequestError(`${field} cannot be null`)
+                let msg = error.errors[0].message
+                errorRes = new BadRequestError(msg)
             }else{
                 errorRes = new InternalError(error)
             }
@@ -192,15 +213,18 @@ export class Users implements UserInterface{
                 }]
             })
 
-            return Promise.resolve({success: true, data: newUser})
+            //remove null data
+            const res = clearData(newUser)
+
+            return Promise.resolve({success: true, data: res})
         } catch (error) {
             let errorRes: Error
 
             if (error instanceof UniqueConstraintError){
                 errorRes = new BadRequestError("Username is already registered")
             }else if(error instanceof ValidationError){
-                let field = error.errors[0].path
-                errorRes = new BadRequestError(`${field} cannot be null`)
+                let msg = error.errors[0].message
+                errorRes = new BadRequestError(msg)
             }else{
                 errorRes = new InternalError(error)
             }
@@ -209,12 +233,25 @@ export class Users implements UserInterface{
         }
     }
 
-    loginVoter(username: string, password: string): Promise<Result> {
-        throw new Error("Method not implemented.");
-    }
+    async login(username: string, password: string): Promise<Result> {
+        try {
+            const user = await User.scope('login').findOne({where: {username: username}})
 
-    loginOrganizer(username: string, password: string): Promise<Result> {
-        throw new Error("Method not implemented.");
+            if( user == null ){
+                return Promise.reject(new BadRequestError("The username inserted is does not exist"))
+            }
+
+            if(!bcrypt.compareSync(password, user.password)){
+                return Promise.reject(new BadRequestError("The password inserted is incorrect"))
+            }
+
+            //remove null data
+            const res = clearData(user)
+
+            return Promise.resolve({success: true, data: res})
+        } catch (error) {
+            return Promise.reject(new InternalError(error))
+        }
     }
     
 }

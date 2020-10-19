@@ -18,7 +18,7 @@ export async function handleRegisterAdmins(req: Request, res: Response, next: Ne
     try {
         const user = req.body
         const data = await users.add(user)
-        res.status(Status.OK).send(data)
+        res.status(Status.CREATED).send(data)
     } catch (error) {
         next(error)
     }
@@ -69,7 +69,7 @@ export async function handleRegisterVoters(req: Request, res: Response, next: Ne
     try {
         const user = req.body
         const data = await users.registerVoter(user)
-        res.status(Status.OK).send(data)
+        res.status(Status.CREATED).send(data)
     } catch (error) {
         next(error)
     }
@@ -79,7 +79,7 @@ export async function handleRegisterOrganizers(req: Request, res: Response, next
     try {
         const user = req.body
         const data = await users.registerOrganizer(user)
-        res.status(Status.OK).send(data)
+        res.status(Status.CREATED).send(data)
     } catch (error) {
         next(error)
     }
@@ -89,7 +89,17 @@ export async function handleRegisterCollaborators(req: Request, res: Response, n
     try {
         const user = req.body
         const data = await users.registerCollaborator(user)
-        res.status(Status.OK).send(data)
+        res.status(Status.CREATED).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleLogin(req: Request, res: Response, next: NextFunction) {
+    try {
+        const {username, password} = req.body
+        const data = await users.login(username, password)
+        res.status(Status.CREATED).send(data)
     } catch (error) {
         next(error)
     }

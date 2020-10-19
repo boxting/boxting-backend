@@ -21,7 +21,8 @@ export class Organizer extends Model<Organizer>{
 
     @ForeignKey(() => User)
     @Column({
-        allowNull: true
+        allowNull: true,
+        onDelete: "CASCADE"
     })
     userId!: number
 }

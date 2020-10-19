@@ -1,8 +1,7 @@
-import { Table, Model, Column, CreatedAt, UpdatedAt, ForeignKey, BelongsTo, HasOne, Scopes, NotNull } from "sequelize-typescript"
+import { Table, Model, Column, CreatedAt, UpdatedAt, ForeignKey, BelongsTo, HasOne, Scopes, NotNull, DefaultScope } from "sequelize-typescript"
 import { Organizer } from "./organizer.model"
 import { Role } from "./role.model"
 import { Voter } from "./voter.model"
-
 
 @Scopes(() => ({
     full: {
@@ -16,18 +15,37 @@ import { Voter } from "./voter.model"
                 model: Voter,
                 attributes: {
                     exclude: ["createdAt", "updatedAt", "userId"],
-                },
-                required: false
+                }
             },
             {
                 model: Organizer,
                 attributes: {
                     exclude: ["createdAt", "updatedAt", "userId"],
-                },
-                required: false
+                }
             }
         ],
     },
+    login:{
+        attributes: ["id", "username", "password"],
+        include: [
+            {
+                model: Role,
+                attributes: ["id", "name"]
+            },
+            {
+                model: Voter,
+                attributes: {
+                    exclude: ["createdAt", "updatedAt", "userId"],
+                }
+            },
+            {
+                model: Organizer,
+                attributes: {
+                    exclude: ["createdAt", "updatedAt", "userId"],
+                }
+            }
+        ],
+    }
 }))
 @Table
 export class User extends Model<User>{
@@ -37,8 +55,7 @@ export class User extends Model<User>{
         unique: true,
         validate:{
             notEmpty:true,
-            min: 5,
-            max: 25
+            len:[5,25]
         }
     })
     username!: string
@@ -47,7 +64,6 @@ export class User extends Model<User>{
         allowNull: false,
         validate:{
             notEmpty:true,
-            min: 6
         }
     })
     password!: string
@@ -73,9 +89,13 @@ export class User extends Model<User>{
     @BelongsTo(() => Role)
     role?: Role
 
-    @HasOne(() => Voter)
+    @HasOne(() => Voter, {
+        onDelete: "CASCADE"
+    })
     voter?: Voter
     
-    @HasOne(() => Organizer)
+    @HasOne(() => Organizer, {
+        onDelete: "CASCADE"
+    })
     organizer?: Organizer
 }
