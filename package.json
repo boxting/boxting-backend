@@ -4,6 +4,9 @@
   "description": "Backend project for boxting app and admin web control panel",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "start": "tsc && node ./build/index.js",
+    "start:dev": "nodemon",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,5 +27,27 @@
   "bugs": {
     "url": "https://github.com/boxting/boxting-backend/issues"
   },
-  "homepage": "https://github.com/boxting/boxting-backend#readme"
+  "homepage": "https://github.com/boxting/boxting-backend#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "mysql2": "^2.2.5",
+    "reflect-metadata": "^0.1.13",
+    "sequelize": "^5.21.10",
+    "sequelize-typescript": "^1.1.0",
+    "typescript": "^4.0.3"
+  },
+  "devDependencies": {
+    "@types/bluebird": "^3.5.32",
+    "@types/body-parser": "^1.19.0",
+    "@types/express": "^4.17.8",
+    "@types/morgan": "^1.9.1",
+    "@types/node": "^14.11.10",
+    "@types/validator": "^13.1.0",
+    "http-status-codes": "^2.1.4",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.5",
+    "ts-node": "^9.0.0"
+  }
 }
