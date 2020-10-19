@@ -3,6 +3,7 @@ import { config as EnvConfig } from "dotenv"
 import Morgan from "morgan"
 import { json } from "body-parser"
 import { MySequelize } from "./database/sequelize";
+import { handleError } from "./middleware/error.middleware";
 
 export class App{
 
@@ -30,6 +31,8 @@ export class App{
         this.app.get('/', json(), function (req, res) {
             res.send('Hello World!')
         })
+
+        this.app.use(handleError)
     }
 
     async listen(){
