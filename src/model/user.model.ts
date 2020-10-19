@@ -9,7 +9,7 @@ import { Voter } from "./voter.model"
         include: [
             {
                 model: Role,
-                attributes: ["id", "name"]
+                attributes: ["name"]
             },
             {
                 model: Voter,
@@ -26,11 +26,11 @@ import { Voter } from "./voter.model"
         ],
     },
     login:{
-        attributes: ["id", "username", "password"],
+        attributes: ["id", "username", "password", "roleId"],
         include: [
             {
                 model: Role,
-                attributes: ["id", "name"]
+                attributes: ["name"]
             },
             {
                 model: Voter,

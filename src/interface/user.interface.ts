@@ -6,5 +6,7 @@ export interface Users extends Base{
     registerVoter(object: User): Promise<Result>
     registerOrganizer(object: User): Promise<Result>
     registerCollaborator(object: User): Promise<Result>
-    login(username:string, password:string): Promise<Result>
+    loginAdmin(username:string, password:string): Promise<Result>
+    loginVoter(username:string, password:string): Promise<Result>
+    loginOrganizer(username:string, password:string): Promise<Result>
 }

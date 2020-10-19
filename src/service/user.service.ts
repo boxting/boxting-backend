@@ -10,6 +10,7 @@ import bcrypt from "bcrypt"
 import { Voter } from "../model/voter.model";
 import { Organizer } from "../model/organizer.model";
 import { clearData } from "../utils/clear.response";
+import { NotPermittedError } from "../error/not.permitted.error";
 
 export class Users implements UserInterface{
     
@@ -27,36 +28,7 @@ export class Users implements UserInterface{
     }
     
     async add(object: User): Promise<Result> {
-        try {
-
-            if(object.password != null){
-                object.password = bcrypt.hashSync(object.password, 10)
-            }else{
-                return Promise.reject(new BadRequestError(`password cannot be null`))
-            }
-
-            object.roleId = RoleEnum.ADMIN
-            let newUser = await User.create(object)
-
-            //remove null data
-            const res = clearData(newUser)
-
-            return Promise.resolve({success: true, data: res})
-        } catch (error) {
-            let errorRes: Error
-
-            if (error instanceof UniqueConstraintError){
-                errorRes = new BadRequestError("Username is already registered")
-            }else if(error instanceof ValidationError){
-                let field = error.errors[0].path
-                errorRes = new BadRequestError(`${field} cannot be null`)
-            }
-            else{
-                errorRes = new InternalError(error)
-            }
-
-            return Promise.reject(errorRes)
-        }
+        throw("Not implemented")
     }
     
     async deleteAll(): Promise<Result> {
@@ -233,12 +205,17 @@ export class Users implements UserInterface{
         }
     }
 
-    async login(username: string, password: string): Promise<Result> {
+    async loginVoter(username: string, password: string): Promise<Result> {
         try {
             const user = await User.scope('login').findOne({where: {username: username}})
 
             if( user == null ){
                 return Promise.reject(new BadRequestError("The username inserted is does not exist"))
+            }
+            console.log(user.roleId)
+
+            if(user.roleId != RoleEnum.VOTER){
+                return Promise.reject(new NotPermittedError())
             }
 
             if(!bcrypt.compareSync(password, user.password)){
@@ -254,4 +231,53 @@ export class Users implements UserInterface{
         }
     }
     
+    async loginOrganizer(username: string, password: string): Promise<Result> {
+        try {
+            const user = await User.scope('login').findOne({where: {username: username}})
+
+            if( user == null ){
+                return Promise.reject(new BadRequestError("The username inserted is does not exist"))
+            }
+
+            if(user.roleId != RoleEnum.COLLABORATOR && user.roleId != RoleEnum.ORGANIZER){
+                return Promise.reject(new NotPermittedError())
+            }
+
+            if(!bcrypt.compareSync(password, user.password)){
+                return Promise.reject(new BadRequestError("The password inserted is incorrect"))
+            }
+
+            //remove null data
+            const res = clearData(user)
+
+            return Promise.resolve({success: true, data: res})
+        } catch (error) {
+            return Promise.reject(new InternalError(error))
+        }
+    }
+
+    async loginAdmin(username: string, password: string): Promise<Result> {
+        try {
+            const user = await User.scope('login').findOne({where: {username: username}})
+
+            if( user == null ){
+                return Promise.reject(new BadRequestError("The username inserted is does not exist"))
+            }
+
+            if(user.roleId != RoleEnum.ADMIN){
+                return Promise.reject(new NotPermittedError())
+            }
+
+            if(!bcrypt.compareSync(password, user.password)){
+                return Promise.reject(new BadRequestError("The password inserted is incorrect"))
+            }
+
+            //remove null data
+            const res = clearData(user)
+
+            return Promise.resolve({success: true, data: res})
+        } catch (error) {
+            return Promise.reject(new InternalError(error))
+        }
+    }
 }

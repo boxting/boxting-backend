@@ -14,16 +14,6 @@ export async function handleGetAllUsers(req: Request, res: Response, next: NextF
     }
 }
 
-export async function handleRegisterAdmins(req: Request, res: Response, next: NextFunction) {
-    try {
-        const user = req.body
-        const data = await users.add(user)
-        res.status(Status.CREATED).send(data)
-    } catch (error) {
-        next(error)
-    }
-}
-
 export async function handleDeleteUsers(req: Request, res: Response, next: NextFunction) {
     try {
         const data = await users.deleteAll()
@@ -98,7 +88,27 @@ export async function handleRegisterCollaborators(req: Request, res: Response, n
 export async function handleLogin(req: Request, res: Response, next: NextFunction) {
     try {
         const {username, password} = req.body
-        const data = await users.login(username, password)
+        const data = await users.loginAdmin(username, password)
+        res.status(Status.CREATED).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleLoginVoter(req: Request, res: Response, next: NextFunction) {
+    try {
+        const {username, password} = req.body
+        const data = await users.loginVoter(username, password)
+        res.status(Status.CREATED).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleLoginOrganizer(req: Request, res: Response, next: NextFunction) {
+    try {
+        const {username, password} = req.body
+        const data = await users.loginOrganizer(username, password)
         res.status(Status.CREATED).send(data)
     } catch (error) {
         next(error)

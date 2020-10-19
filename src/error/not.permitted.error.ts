@@ -1,4 +1,4 @@
-export class NotFoundError extends Error{
+export class NotPermittedError extends Error{
     
     statusCode: number
 
@@ -6,7 +6,7 @@ export class NotFoundError extends Error{
         super();
         Error.captureStackTrace(this, this.constructor)
         this.name = this.constructor.name
-        this.message = message || "Not found"
-        this.statusCode = 404
+        this.message = message || "You do not have the permission to get this data."
+        this.statusCode = 403
     }
 }

@@ -5,7 +5,8 @@ import {
     handleGetAllUsers, 
     handleGetUserById, 
     handleLogin, 
-    handleRegisterAdmins, 
+    handleLoginOrganizer, 
+    handleLoginVoter, 
     handleRegisterCollaborators, 
     handleRegisterOrganizers, 
     handleRegisterVoters, 
@@ -20,13 +21,13 @@ router.delete('/:id', handleDeleteUserById)
 router.put('/:id', handleUpdateUser)
 
 //Register
-router.post('/admin/add', handleRegisterAdmins)
 router.post('/voter/add', handleRegisterVoters)
 router.post('/collaborator/add', handleRegisterCollaborators)
 router.post('/organizer/add', handleRegisterOrganizers)
 
 //LOGIN
-router.post('/voter/login', handleLogin)
-router.post('/organizer/login', handleLogin)
+router.post('/voter/login', handleLoginVoter)
+router.post('/organizer/login', handleLoginOrganizer)
+router.post('/admin/login', handleLogin)
 
 export { router as users }
