@@ -1,8 +1,40 @@
-import { Table, Model, Column, CreatedAt, UpdatedAt, ForeignKey, BelongsTo, HasOne } from "sequelize-typescript"
+import { Table, Model, Column, CreatedAt, UpdatedAt, ForeignKey, BelongsTo, HasOne, Scopes, NotNull } from "sequelize-typescript"
 import { Organizer } from "./organizer.model"
 import { Role } from "./role.model"
 import { Voter } from "./voter.model"
 
+
+@Scopes(() => ({
+    full: {
+        attributes: ["id", "username", "isActive"],
+        include: [
+            {
+                model: Role,
+                attributes: ["id", "name"]
+            },
+            {
+                model: Voter,
+                attributes: {
+                    exclude: ["createdAt", "updatedAt", "userId"],
+                },
+                required: false,
+                where: {
+                    val: NotNull
+                }
+            },
+            {
+                model: Organizer,
+                attributes: {
+                    exclude: ["createdAt", "updatedAt", "userId"],
+                },
+                required: false,
+                where: {
+                    val: NotNull
+                }
+            }
+        ],
+    },
+}))
 @Table
 export class User extends Model<User>{
 
