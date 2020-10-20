@@ -24,7 +24,7 @@ export class Users implements UserInterface{
 
             return Promise.resolve({success: true, data: res})
         } catch (error) {
-            return Promise.reject(new InternalError(error))
+            return Promise.reject(new InternalError(500, error))
         }
     }
     
@@ -37,7 +37,7 @@ export class Users implements UserInterface{
             let deleted = await User.destroy({where:{}})
             return Promise.resolve({success: true, data: `${deleted} objects deleted`})
         } catch (error) {
-            return Promise.reject(new InternalError(error))
+            return Promise.reject(new InternalError(500, error))
         }
     }
     
@@ -46,7 +46,7 @@ export class Users implements UserInterface{
             await User.destroy({where:{ id: id }})
             return Promise.resolve({success: true, data: 'Object deleted'})
         } catch (error) {
-            return Promise.reject(new InternalError(error))
+            return Promise.reject(new InternalError(500, error))
         }
     }
     
@@ -55,7 +55,7 @@ export class Users implements UserInterface{
             let user = await User.scope('full').findByPk(id)
 
             if (user == null){
-                return Promise.reject(new NotFoundError("No user found with this id"))
+                return Promise.reject(new NotFoundError(3001, "No user found with this id"))
             }
 
             //remove null data
@@ -63,7 +63,7 @@ export class Users implements UserInterface{
 
             return Promise.resolve({success: true, data: res})
         } catch (error) {
-            return Promise.reject(new InternalError(error))
+            return Promise.reject(new InternalError(500, error))
         }
     }
     
@@ -77,20 +77,20 @@ export class Users implements UserInterface{
 
             return Promise.resolve({success: true, data: `User updated with ${changes} change(s)`})
         } catch (error) {
-            return Promise.reject(new InternalError(error))
+            return Promise.reject(new InternalError(500, error))
         }
     }
 
     async registerVoter(object: User): Promise<Result> {
         try {
             if(object.voter == null){
-                return Promise.reject(new BadRequestError("You must include a voter {} to register a voter"))
+                return Promise.reject(new BadRequestError(2004, "You must include a voter {} to register a voter"))
             }
 
             if(object.password != null){
                 object.password = bcrypt.hashSync(object.password, 10)
             }else{
-                return Promise.reject(new BadRequestError(`password cannot be null`))
+                return Promise.reject(new BadRequestError(2002, 'password cannot be null'))
             }
             
             //Check if voter is valid before creating user
@@ -109,9 +109,9 @@ export class Users implements UserInterface{
 
             if(existVoter != null){
                 if(existVoter.mail == object.voter.mail){
-                    return Promise.reject(new BadRequestError("Mail is already registered"))
+                    return Promise.reject(new BadRequestError(2005, "Mail is already registered"))
                 }else{
-                    return Promise.reject(new BadRequestError("Dni is already registered"))
+                    return Promise.reject(new BadRequestError(2006, "Dni is already registered"))
                 }
             }
 
@@ -130,12 +130,12 @@ export class Users implements UserInterface{
         } catch (error) {
             let errorRes: Error
             if (error instanceof UniqueConstraintError){
-                errorRes = new BadRequestError("Username is already registered")
+                errorRes = new BadRequestError(2001, "Username is already registered")
             }else if(error instanceof ValidationError){
                 let msg = error.errors[0].message
-                errorRes = new BadRequestError(msg)
+                errorRes = new BadRequestError(2003, msg)
             }else{
-                errorRes = new InternalError(error)
+                errorRes = new InternalError(500, error)
             }
 
             return Promise.reject(errorRes)
@@ -146,13 +146,13 @@ export class Users implements UserInterface{
         try {
             
             if(object.organizer == null){
-                return Promise.reject(new BadRequestError("You must include a organizer {} to register an organizer"))
+                return Promise.reject(new BadRequestError(2007, "You must include a organizer {} to register an organizer"))
             }
 
             if(object.password != null){
                 object.password = bcrypt.hashSync(object.password, 10)
             }else{
-                return Promise.reject(new BadRequestError(`password cannot be null`))
+                return Promise.reject(new BadRequestError(2002, `password cannot be null`))
             }
 
             //Check if organizer is valid before creating user
@@ -175,12 +175,12 @@ export class Users implements UserInterface{
             let errorRes: Error
 
             if (error instanceof UniqueConstraintError){
-                errorRes = new BadRequestError("Username is already registered")
+                errorRes = new BadRequestError(2001, "Username is already registered")
             }else if(error instanceof ValidationError){
                 let msg = error.errors[0].message
-                errorRes = new BadRequestError(msg)
+                errorRes = new BadRequestError(2003, msg)
             }else{
-                errorRes = new InternalError(error)
+                errorRes = new InternalError(500, error)
             }
 
             return Promise.reject(errorRes)
@@ -193,7 +193,7 @@ export class Users implements UserInterface{
             if(object.password != null){
                 object.password = bcrypt.hashSync(object.password, 10)
             }else{
-                return Promise.reject(new BadRequestError(`password cannot be null`))
+                return Promise.reject(new BadRequestError(2002, `password cannot be null`))
             }
 
             object.roleId = RoleEnum.COLLABORATOR
@@ -212,12 +212,12 @@ export class Users implements UserInterface{
             let errorRes: Error
 
             if (error instanceof UniqueConstraintError){
-                errorRes = new BadRequestError("Username is already registered")
+                errorRes = new BadRequestError(2001, "Username is already registered")
             }else if(error instanceof ValidationError){
                 let msg = error.errors[0].message
-                errorRes = new BadRequestError(msg)
+                errorRes = new BadRequestError(2003, msg)
             }else{
-                errorRes = new InternalError(error)
+                errorRes = new InternalError(500, error)
             }
 
             return Promise.reject(errorRes)
@@ -229,15 +229,15 @@ export class Users implements UserInterface{
             const user = await User.scope('login').findOne({where: {username: username}})
 
             if( user == null ){
-                return Promise.reject(new BadRequestError("The username inserted is does not exist"))
+                return Promise.reject(new BadRequestError(1001, "The username inserted does not exist"))
             }
 
             if(user.roleId != RoleEnum.VOTER){
-                return Promise.reject(new NotPermittedError())
+                return Promise.reject(new NotPermittedError(1003))
             }
 
             if(!bcrypt.compareSync(password, user.password)){
-                return Promise.reject(new BadRequestError("The password inserted is incorrect"))
+                return Promise.reject(new BadRequestError(1002, "The password inserted is incorrect"))
             }
 
             //get authentication token
@@ -249,7 +249,7 @@ export class Users implements UserInterface{
 
             return Promise.resolve({success: true, data: res})
         } catch (error) {
-            return Promise.reject(new InternalError(error))
+            return Promise.reject(new InternalError(500, error))
         }
     }
     
@@ -258,15 +258,15 @@ export class Users implements UserInterface{
             const user = await User.scope('login').findOne({where: {username: username}})
 
             if( user == null ){
-                return Promise.reject(new BadRequestError("The username inserted is does not exist"))
+                return Promise.reject(new BadRequestError(1001, "The username inserted is does not exist"))
             }
 
             if(user.roleId != RoleEnum.COLLABORATOR && user.roleId != RoleEnum.ORGANIZER){
-                return Promise.reject(new NotPermittedError())
+                return Promise.reject(new NotPermittedError(1003))
             }
 
             if(!bcrypt.compareSync(password, user.password)){
-                return Promise.reject(new BadRequestError("The password inserted is incorrect"))
+                return Promise.reject(new BadRequestError(1002, "The password inserted is incorrect"))
             }
 
             //get authentication token
@@ -278,7 +278,7 @@ export class Users implements UserInterface{
 
             return Promise.resolve({success: true, data: res})
         } catch (error) {
-            return Promise.reject(new InternalError(error))
+            return Promise.reject(new InternalError(500, error))
         }
     }
 
@@ -287,15 +287,15 @@ export class Users implements UserInterface{
             const user = await User.scope('login').findOne({where: {username: username}})
 
             if( user == null ){
-                return Promise.reject(new BadRequestError("The username inserted is does not exist"))
+                return Promise.reject(new BadRequestError(1001, "The username inserted is does not exist"))
             }
 
             if(user.roleId != RoleEnum.ADMIN){
-                return Promise.reject(new NotPermittedError())
+                return Promise.reject(new NotPermittedError(1003))
             }
 
             if(!bcrypt.compareSync(password, user.password)){
-                return Promise.reject(new BadRequestError("The password inserted is incorrect"))
+                return Promise.reject(new BadRequestError(1002, "The password inserted is incorrect"))
             }
 
             //get authentication token
@@ -307,7 +307,7 @@ export class Users implements UserInterface{
 
             return Promise.resolve({success: true, data: res})
         } catch (error) {
-            return Promise.reject(new InternalError(error))
+            return Promise.reject(new InternalError(500, error))
         }
     }
 }
