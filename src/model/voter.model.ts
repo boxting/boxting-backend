@@ -8,7 +8,6 @@ export class Voter extends Model<Voter>{
         allowNull: false,
         validate:{
             notEmpty:true,
-            isAlpha:true,
         }
     })
     firstName!: string
@@ -17,7 +16,6 @@ export class Voter extends Model<Voter>{
         allowNull: false,
         validate:{
             notEmpty:true,
-            isAlpha:true,
         }
     })
     lastName!: string
