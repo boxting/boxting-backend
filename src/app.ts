@@ -1,6 +1,7 @@
 import Express, { Application } from "express";
 import { config as EnvConfig } from "dotenv"
 import Morgan from "morgan"
+import Cors from "cors"
 import { json } from "body-parser"
 import { MySequelize } from "./database/sequelize";
 import { handleError } from "./middleware/error.middleware";
@@ -26,6 +27,7 @@ export class App{
 
     middlewares(){
         this.app.use(Morgan('dev'))
+        this.app.use(Cors())
     }
 
     routes(){
