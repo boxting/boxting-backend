@@ -1,4 +1,6 @@
-import { Table, Model, Column, CreatedAt, UpdatedAt, ForeignKey, BelongsTo, HasOne, Scopes, NotNull, DefaultScope } from "sequelize-typescript"
+import { Table, Model, Column, CreatedAt, UpdatedAt, Scopes, BelongsToMany } from "sequelize-typescript"
+import { UserEvent } from "./user.event.model"
+import { User } from "./user.model"
 
 @Scopes(() => ({
     
@@ -56,4 +58,7 @@ export class Event extends Model<Event>{
 
     @UpdatedAt
     updatedAt!: Date
+
+    @BelongsToMany(() => User, () => UserEvent)
+    users? : User[]
 }

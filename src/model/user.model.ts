@@ -1,6 +1,8 @@
-import { Table, Model, Column, CreatedAt, UpdatedAt, ForeignKey, BelongsTo, HasOne, Scopes, NotNull, DefaultScope } from "sequelize-typescript"
+import { Table, Model, Column, CreatedAt, UpdatedAt, ForeignKey, BelongsTo, HasOne, Scopes, BelongsToMany } from "sequelize-typescript"
+import { Event } from "./event.model"
 import { Organizer } from "./organizer.model"
 import { Role } from "./role.model"
+import { UserEvent } from "./user.event.model"
 import { Voter } from "./voter.model"
 
 @Scopes(() => ({
@@ -99,4 +101,7 @@ export class User extends Model<User>{
         onDelete: "CASCADE"
     })
     organizer?: Organizer
+
+    @BelongsToMany(() => Event, () => UserEvent)
+    events? : Event[]
 }
