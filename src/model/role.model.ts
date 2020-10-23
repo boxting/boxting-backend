@@ -8,8 +8,8 @@ export class Role extends Model<Role>{
         allowNull: false,
         unique: true,
         validate: {
-            isAlpha: true,
-            notEmpty: true
+            notEmpty: true,
+            len: [1, 50]
         }
     })
     name!: string

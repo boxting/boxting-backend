@@ -8,7 +8,7 @@ export class Organizer extends Model<Organizer>{
         allowNull: false,
         validate:{
             notEmpty:true,
-            isAlpha:true
+            len: [1, 50]
         }
     })
     name!: string

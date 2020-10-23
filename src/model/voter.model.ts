@@ -8,6 +8,7 @@ export class Voter extends Model<Voter>{
         allowNull: false,
         validate:{
             notEmpty:true,
+            len: [1, 50]
         }
     })
     firstName!: string
@@ -16,6 +17,7 @@ export class Voter extends Model<Voter>{
         allowNull: false,
         validate:{
             notEmpty:true,
+            len: [1, 50]
         }
     })
     lastName!: string
@@ -25,7 +27,7 @@ export class Voter extends Model<Voter>{
         validate:{
             notEmpty:true,
             isNumeric:true,
-            len:[8, 8]
+            len:[8, 10]
         },
         unique: true
     })
@@ -35,7 +37,8 @@ export class Voter extends Model<Voter>{
         allowNull: false,
         validate:{
             notEmpty:true,
-            isEmail:true
+            isEmail:true,
+            len: [5, 50]
         },
         unique: true
     })
@@ -45,7 +48,8 @@ export class Voter extends Model<Voter>{
         allowNull: false,
         validate:{
             notEmpty:true,
-            isNumeric:true
+            isNumeric:true,
+            len: [9, 15]
         }
     })
     phone!: string

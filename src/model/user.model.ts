@@ -55,7 +55,7 @@ export class User extends Model<User>{
         unique: true,
         validate:{
             notEmpty:true,
-            len:[3,25]
+            len:[3,50]
         }
     })
     username!: string
@@ -64,6 +64,7 @@ export class User extends Model<User>{
         allowNull: false,
         validate:{
             notEmpty:true,
+            len: [6, 50]
         }
     })
     password!: string
