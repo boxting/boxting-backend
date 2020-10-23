@@ -138,7 +138,12 @@ export async function handleAddCollaborator(req: Request, res: Response, next: N
     try {
         const id = req.params.id
         const user = req.body
-        const data = await events.registerCollaborator(user, Number(id))
+
+        const tokenRequest = req as TokenRequest
+        const roleId = tokenRequest.user.role
+        const userId = tokenRequest.user.id
+
+        const data = await events.registerCollaborator(user, Number(id), roleId, userId)
 
         res.status(Status.OK).send(data)
     } catch (error) {

@@ -13,7 +13,8 @@ import {
     handleUpdateUser,
     handleGetUserByToken,
     handleDeleteUserByToken,
-    handleUpdateUserByToken} from "../controller/user.controller";
+    handleUpdateUserByToken,
+    handleGetAllUserEvents} from "../controller/user.controller";
 import { authenticateToken } from "../middleware/jwt.middleware";
 import { authenticateRole } from "../middleware/role.middleware";
 import { RoleEnum } from "../utils/role.enum";
@@ -28,6 +29,7 @@ router.put('/:id', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handle
 
 //Token based routes
 router.get('/token/:id', authenticateToken, handleGetUserByToken) 
+router.get('/token/events/get', authenticateToken, handleGetAllUserEvents)
 router.delete('/token/:id', authenticateToken, handleDeleteUserByToken)
 router.put('/token/:id', authenticateToken, handleUpdateUserByToken)
 

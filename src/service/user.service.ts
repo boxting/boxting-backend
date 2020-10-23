@@ -335,10 +335,8 @@ export class Users implements UserInterface{
             if(user == null){
                 Promise.reject(new NotFoundError(3001, "No user found with this id"))
             }
-
             const res = clearData(user?.events)
-
-            Promise.resolve({ success:true, data: res })
+            return Promise.resolve({ success:true, data: res })
 
         } catch (error) {
             return Promise.reject(new InternalError(500, error))

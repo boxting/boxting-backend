@@ -65,8 +65,7 @@ export class User extends Model<User>{
     @Column({
         allowNull: false,
         validate:{
-            notEmpty:true,
-            len: [6, 50]
+            notEmpty:true
         }
     })
     password!: string

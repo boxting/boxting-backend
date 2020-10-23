@@ -1,4 +1,4 @@
-import { ValidationError } from "sequelize/types";
+import { ValidationError } from "sequelize";
 import { BadRequestError } from "../error/bad.request.error";
 import { InternalError } from "../error/base.error";
 import { NotFoundError } from "../error/not.found.error";
@@ -51,8 +51,17 @@ export class Events implements EventsInterface{
         }
     }
 
-    async registerCollaborator(object: User, eventId: number): Promise<Result>{
+    async registerCollaborator(object: User, eventId: number, role: number, userId:number): Promise<Result>{
         try {
+
+            if( role == RoleEnum.ORGANIZER ){
+                
+                const relation: UserEvent|null = await UserEvent.findOne({ where: { userId: userId, eventId: eventId } })
+
+                if( relation == null || !relation.isOwner ){
+                    return Promise.reject(new NotPermittedError(4003, "You can't modify a event that is not yours."))
+                }
+            }
 
             const collabCreation = await this.userService.registerCollaborator(object)
             const user = collabCreation.data as User
@@ -82,7 +91,7 @@ export class Events implements EventsInterface{
     
     async get(): Promise<Result> {
         try {
-            let events = await Event.scope('full').findAll()
+            let events = await Event.findAll()
 
             //remove null data
             const res = clearData(events)
@@ -97,9 +106,8 @@ export class Events implements EventsInterface{
         try {
 
             //Check if event is valid before creating
+            object.code = Math.random().toString(36).substr(2, 10)
             let objEvent:Event = new Event(object)
-            objEvent.code = Math.random().toString(36).substr(2, 10)
-
             objEvent.validate()
 
             let user = await User.findByPk(userId)
@@ -120,7 +128,7 @@ export class Events implements EventsInterface{
             let errorRes: Error
             if(error instanceof ValidationError){
                 let msg = error.errors[0].message
-                errorRes = new BadRequestError(2003, msg)
+                errorRes = new BadRequestError(4008, msg)
             }else{
                 errorRes = new InternalError(500, error)
             }
@@ -228,13 +236,13 @@ export class Events implements EventsInterface{
             if( event.startDate.getTime() <= Date.now() ){
                 return Promise.reject(new BadRequestError(4002, "You can't modify a event that has already started."))
             }
+            
+            let startDate = Date.parse(object.startDate as unknown as string) || event.startDate.getTime()
+            let endDate = Date.parse(object.endDate as unknown as string) || event.endDate.getTime()
 
-            let startDate = object.startDate || event.startDate
-            let endDate = object.endDate || event.endDate
-
-            if( startDate.getTime() <= Date.now() ){
+            if( startDate <= Date.now() ){
                 return Promise.reject(new BadRequestError(4004, "The start date cannot be before current date."))
-            }else if( startDate.getTime() >= endDate.getTime()){
+            }else if( startDate >= endDate){
                 return Promise.reject(new BadRequestError(4005, "The end date cannot be before start date."))
             }
 
@@ -244,8 +252,9 @@ export class Events implements EventsInterface{
             
             let changes = await Event.update(object, { where: { id: id } })
 
-            return Promise.resolve({success: true, data: `User updated with ${changes} change(s)`})
+            return Promise.resolve({success: true, data: `Event updated with ${changes} change(s)`})
         } catch (error) {
+            console.log(error)
             return Promise.reject(new InternalError(500, error))
         }
     }

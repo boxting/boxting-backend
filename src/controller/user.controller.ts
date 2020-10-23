@@ -154,3 +154,16 @@ export async function handleUpdateUserByToken(req: Request, res: Response, next:
         next(error)
     }
 }
+
+export async function handleGetAllUserEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+        const tokenRequest = req as TokenRequest
+        const id = tokenRequest.user.id
+
+        const data = await users.getAllEvents(id)
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
