@@ -186,6 +186,35 @@ export class Events implements EventsInterface{
             return Promise.reject(new InternalError(500, error))
         }
     }
+
+    async getByIdWithRole(id: string, role: number, userId: number): Promise<Result> {
+        try {         
+            let event: Event|null = null
+
+            if(role == RoleEnum.VOTER){
+                event = await Event.scope('voter').findByPk(id)
+            }else if(role == RoleEnum.COLLABORATOR || role == RoleEnum.ORGANIZER){
+                event = await Event.scope('full').findByPk(id)
+            }
+
+            if (event == null){
+                return Promise.reject(new NotFoundError(4001, "No event found with this id"))
+            }
+ 
+            const relation: UserEvent|null = await UserEvent.findOne({ where: { userId: userId, eventId: id } })
+
+            if( relation == null ){
+                return Promise.reject(new NotPermittedError(4010, "You don't have access to this event."))
+            }
+
+            //remove null data
+            const res = clearData(event)
+
+            return Promise.resolve({success: true, data: res})
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
     
     async update(id: string, object: Event): Promise<Result> {
 

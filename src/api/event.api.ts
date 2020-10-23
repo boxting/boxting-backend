@@ -3,6 +3,7 @@ import {
     handleDeleteEventWithToken, 
     handleGetAllEvents,
     handleGetEventById,
+    handleGetEventByIdWithToken,
     handleUpdateEvent,
     handleUpdateEventWithToken,
     handleCreateEvent,
@@ -26,6 +27,7 @@ router.post('/:id/add/collaborator', authenticateToken, authenticateRole([RoleEn
 router.put('/:id/update', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleUpdateEvent)
 
 router.post('/token/create', authenticateToken, authenticateRole([RoleEnum.ORGANIZER]), handleCreateEventWithToken)
+router.post('/token/get/:id', authenticateToken, handleGetEventByIdWithToken)
 router.delete('/token/delete/:id', authenticateToken, authenticateRole([RoleEnum.ORGANIZER, RoleEnum.ADMIN]), handleDeleteEventWithToken )
 router.put('/token/update/:id', authenticateToken, authenticateRole([RoleEnum.ORGANIZER, RoleEnum.COLLABORATOR]), handleUpdateEventWithToken)
 router.post('/token/suscribe/voter', authenticateToken, authenticateRole([RoleEnum.VOTER]), handleSuscribeVoterWithToken)

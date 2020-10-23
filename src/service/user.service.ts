@@ -12,6 +12,7 @@ import { Organizer } from "../model/organizer.model";
 import { clearData } from "../utils/clear.response";
 import { NotPermittedError } from "../error/not.permitted.error";
 import { createToken } from "../utils/create.token";
+import { Event } from "../model/event.model";
 
 export class Users implements UserInterface{
     
@@ -314,6 +315,31 @@ export class Users implements UserInterface{
             res['token'] = token
 
             return Promise.resolve({success: true, data: res})
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async getAllEvents(userId: number){
+
+        try {
+            const user:User|null = await User.findByPk(userId, {
+                include: [{
+                    model: Event,
+                    through: {
+                        attributes: []
+                    }
+                }]
+            })
+            
+            if(user == null){
+                Promise.reject(new NotFoundError(3001, "No user found with this id"))
+            }
+
+            const res = clearData(user?.events)
+
+            Promise.resolve({ success:true, data: res })
+
         } catch (error) {
             return Promise.reject(new InternalError(500, error))
         }

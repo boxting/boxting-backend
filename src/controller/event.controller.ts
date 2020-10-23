@@ -39,6 +39,20 @@ export async function handleGetEventById(req: Request, res: Response, next: Next
     }
 }
 
+export async function handleGetEventByIdWithToken(req: Request, res: Response, next: NextFunction) {
+    try {
+        let id = req.params.id
+        const tokenRequest = req as TokenRequest
+        const userId = tokenRequest.user.id
+        const roleId = tokenRequest.user.role
+
+        const data = await events.getByIdWithRole(id, roleId, userId)
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export async function handleUpdateEvent(req: Request, res: Response, next: NextFunction) {
     try {
         let id = req.params.id
