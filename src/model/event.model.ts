@@ -4,7 +4,7 @@ import { Table, Model, Column, CreatedAt, UpdatedAt, ForeignKey, BelongsTo, HasO
     
 }))
 @Table
-export class User extends Model<User>{
+export class Event extends Model<Event>{
 
     @Column({
         allowNull: false,
