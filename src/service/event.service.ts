@@ -79,35 +79,7 @@ export class Events implements EventsInterface{
             return Promise.reject(errorRes)
         }
     }
-
-    async registerOwner(userId: number, eventId: number): Promise<Result>{
-        try {
-
-            let user = await User.findByPk(userId)
-
-            if(user == null){
-                return Promise.reject(new NotFoundError(3001, "No user found with this id"))
-            }
-
-            if(user.roleId != RoleEnum.VOTER){
-                return Promise.reject(new BadRequestError(4006, "The user you are trying to register is not a voter."))
-            }
-
-            let event = await Event.findOne({ where: { code: eventId } })
-            
-            if(event == null){
-                return Promise.reject(new NotFoundError(4007, "There is no event with the inserted code."))
-            }
-
-            let res = await UserEvent.create({ userId: userId, eventId: eventId, isOwner: true })
-
-            return Promise.resolve({success: true, data: res})
-        } catch (error) {
-
-            return Promise.reject(new InternalError(500, error))
-        }
-    }
-
+    
     async get(): Promise<Result> {
         try {
             let events = await Event.scope('full').findAll()
@@ -133,6 +105,10 @@ export class Events implements EventsInterface{
             let user = await User.findByPk(userId)
             if(user == null){
                 return Promise.reject(new NotFoundError(3001, "No user found with this id"))
+            }
+
+            if(user.roleId != RoleEnum.ORGANIZER){
+                return Promise.reject(new BadRequestError(4009, "The user you are trying to register is not a organizer."))
             }
 
             let newEvent = await Event.create(object)
@@ -210,29 +186,6 @@ export class Events implements EventsInterface{
             return Promise.reject(new InternalError(500, error))
         }
     }
-
-    async getByIdWithRole(id: string, role:number): Promise<Result> {
-        try {         
-            let event: Event|null = null
-
-            if(role == RoleEnum.VOTER){
-                event = await Event.scope('voter').findByPk(id)
-            }else if(role == RoleEnum.COLLABORATOR || role == RoleEnum.ORGANIZER){
-                event = await Event.scope('full').findByPk(id)
-            }
-
-            if (event == null){
-                return Promise.reject(new NotFoundError(4001, "No event found with this id"))
-            }
-
-            //remove null data
-            const res = clearData(event)
-
-            return Promise.resolve({success: true, data: res})
-        } catch (error) {
-            return Promise.reject(new InternalError(500, error))
-        }
-    }
     
     async update(id: string, object: Event): Promise<Result> {
 
@@ -265,6 +218,35 @@ export class Events implements EventsInterface{
             return Promise.resolve({success: true, data: `User updated with ${changes} change(s)`})
         } catch (error) {
             return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async updateWithRole(id: string, object:Event, role: number, userId:number): Promise<Result>{
+        try {
+            
+            if( role == RoleEnum.ORGANIZER || role == RoleEnum.COLLABORATOR){
+                
+                const relation: UserEvent|null = await UserEvent.findOne({ where: { userId: userId, eventId: id } })
+
+                if( relation == null || (!relation.isOwner && !relation.isCollaborator) ){
+                    return Promise.reject(new NotPermittedError(4003, "You can't modify a event that is not yours."))
+                }
+            }
+
+            const res = await this.update(id, object)
+
+            return Promise.resolve(res)
+        } catch (error) {
+
+            let errorRes: Error
+
+            if( error instanceof InternalError || error instanceof BadRequestError || error instanceof NotFoundError){
+                errorRes = error
+            }else{
+                errorRes = new InternalError(500, error)
+            }
+
+            return Promise.reject(errorRes)
         }
     }
 }
