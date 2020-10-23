@@ -190,11 +190,19 @@ export class Users implements UserInterface{
     async registerCollaborator(object: User): Promise<Result> {
         try {
 
+            if(object.organizer == null){
+                return Promise.reject(new BadRequestError(2007, "You must include a organizer {} to register an organizer"))
+            }
+
             if(object.password != null){
                 object.password = bcrypt.hashSync(object.password, 10)
             }else{
                 return Promise.reject(new BadRequestError(2002, `password cannot be null`))
             }
+
+            //Check if organizer is valid before creating user
+            let newOrganizer:Organizer = new Organizer(object.organizer)
+            await newOrganizer.validate()
 
             object.roleId = RoleEnum.COLLABORATOR
 

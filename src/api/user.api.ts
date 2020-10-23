@@ -20,11 +20,11 @@ import { RoleEnum } from "../utils/role.enum";
 
 const router = Router()
 
-router.get('/get/all', authenticateToken, authenticateRole(RoleEnum.ADMIN), handleGetAllUsers)
-router.delete('/delete/all', authenticateToken, authenticateRole(RoleEnum.ADMIN), handleDeleteUsers)
-router.get('/:id', authenticateToken, authenticateRole(RoleEnum.ADMIN), handleGetUserById) 
-router.delete('/:id', authenticateToken, authenticateRole(RoleEnum.ADMIN), handleDeleteUserById)
-router.put('/:id', authenticateToken, authenticateRole(RoleEnum.ADMIN), handleUpdateUser)
+router.get('/get/all', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleGetAllUsers)
+router.delete('/delete/all', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleDeleteUsers)
+router.get('/:id', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleGetUserById) 
+router.delete('/:id', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleDeleteUserById)
+router.put('/:id', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleUpdateUser)
 
 //Token based routes
 router.get('/token/:id', authenticateToken, handleGetUserByToken) 

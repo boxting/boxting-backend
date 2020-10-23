@@ -2,11 +2,11 @@ import { Request, Response, NextFunction } from "express";
 import { TokenRequest } from "../interface/request.interface";
 
 
-export function authenticateRole(role: number) {
+export function authenticateRole(roles: number[]) {
     return (req: Request, res: Response, next: NextFunction) => {
         const tokenRequest = req as TokenRequest
-
-        if (tokenRequest.user.role != role) {
+        
+        if (roles.indexOf(tokenRequest.user.role) == -1) {
             return res.status(403).send('You do not have the permission to get this data.')
         }
 

@@ -14,10 +14,19 @@ export class UserEvent extends Model<UserEvent>{
     eventId!: number
 
     @Column({
-        allowNull: true,
-        validate:{
-            notEmpty:true
-        }
+        allowNull: true
     })
     accessCode?: string
+
+    @Column({
+        allowNull: true,
+        defaultValue: false
+    })
+    isOwner?: boolean
+
+    @Column({
+        allowNull: true,
+        defaultValue: false
+    })
+    isCollaborator?: boolean
 }
