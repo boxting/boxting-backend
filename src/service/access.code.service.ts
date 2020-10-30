@@ -1,15 +1,23 @@
 
 import { BadRequestError } from "../error/bad.request.error";
 import { InternalError } from "../error/base.error";
+import { NotPermittedError } from "../error/not.permitted.error";
 import { AccessCode as AccessCodeInterface } from "../interface/access.code.interface"
 import { Result } from "../interface/result.interface";
 import { AccessCode } from "../model/access.code.model";
+import { UserEvent } from "../model/user.event.model";
 
 export class AccessCodes implements AccessCodeInterface{
 
-    async addOnEvent(codes:string[], eventId:number): Promise<Result>{
+    async addOnEvent(codes:string[], eventId:number, userId:number): Promise<Result>{
 
         try {
+
+            const relation: UserEvent|null = await UserEvent.findOne({ where: { userId: userId, eventId: eventId } })
+
+            if( relation == null || (!relation.isOwner) ){
+                return Promise.reject(new NotPermittedError(4003, "You can't modify a event that is not yours."))
+            }
 
             //First check all repetitions on sent codes
             let uniqueCodes = [ ...new Set(codes)]
@@ -27,9 +35,9 @@ export class AccessCodes implements AccessCodeInterface{
             }
 
             //Convert each code in a new AccessCode object
-            let newAccessCodes : AccessCode[] = []
+            let newAccessCodes : Object[] = []
             codes.forEach( (code) =>{
-                newAccessCodes.push(new AccessCode({ code: code, eventId: eventId }))
+                newAccessCodes.push({ code: code, eventId: eventId })
             })
 
             console.log(newAccessCodes)

@@ -7,6 +7,7 @@ import { MySequelize } from "./database/sequelize";
 import { handleError } from "./middleware/error.middleware";
 import { users } from "./api/user.api"
 import { events } from "./api/event.api";
+import { accessCodes } from "./api/access.code.api";
 
 export class App{
 
@@ -38,6 +39,7 @@ export class App{
 
         this.app.use('/user', json(), users)
         this.app.use('/event', json(), events)
+        this.app.use('/accesscodes', json(), accessCodes)
 
         this.app.use(handleError)
     }
