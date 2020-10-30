@@ -1,5 +1,6 @@
 import { config } from "dotenv";
 import { Sequelize } from "sequelize-typescript";
+import { AccessCode } from "../model/access.code.model";
 import { Event } from "../model/event.model";
 import { Organizer } from "../model/organizer.model";
 import { Role } from "../model/role.model";
@@ -28,7 +29,7 @@ export class MySequelize{
                     underscored: true
                 }
             })
-            this.conn.addModels([Role, User, Voter, Organizer, Event, UserEvent])
+            this.conn.addModels([Role, User, Voter, Organizer, Event, UserEvent, AccessCode])
             console.log("Database connected")
         } catch (error) {
             console.log('Something went wrong trying to connect with database')

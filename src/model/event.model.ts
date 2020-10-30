@@ -1,4 +1,5 @@
-import { Table, Model, Column, CreatedAt, UpdatedAt, Scopes, BelongsToMany } from "sequelize-typescript"
+import { Table, Model, Column, CreatedAt, UpdatedAt, Scopes, BelongsToMany, HasMany } from "sequelize-typescript"
+import { AccessCode } from "./access.code.model"
 import { Organizer } from "./organizer.model"
 import { Role } from "./role.model"
 import { UserEvent } from "./user.event.model"
@@ -94,4 +95,7 @@ export class Event extends Model<Event>{
 
     @BelongsToMany(() => User, () => UserEvent)
     users? : User[]
+
+    @HasMany(() => AccessCode)
+    accessCodes? : AccessCode[]
 }
