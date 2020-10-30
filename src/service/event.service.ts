@@ -5,6 +5,7 @@ import { NotFoundError } from "../error/not.found.error";
 import { NotPermittedError } from "../error/not.permitted.error";
 import { Events as EventsInterface } from "../interface/event.interface"
 import { Result } from "../interface/result.interface";
+import { AccessCode } from "../model/access.code.model";
 import { Event } from "../model/event.model";
 import { UserEvent } from "../model/user.event.model";
 import { User } from "../model/user.model";
@@ -23,24 +24,32 @@ export class Events implements EventsInterface{
     async registerVoter(userId: number, eventCode: number, accessCode: string): Promise<Result> {
         try {
 
+            //Check if user exists
             let user = await User.findByPk(userId)
-
             if(user == null){
                 return Promise.reject(new NotFoundError(3001, "No user found with this id"))
             }
 
+            //Check if is a voter
             if(user.roleId != RoleEnum.VOTER){
                 return Promise.reject(new BadRequestError(4006, "The user you are trying to register is not a voter."))
             }
 
+            //Check if event exists
             let event = await Event.findOne({ where: { code: eventCode } })
-            
             if(event == null){
                 return Promise.reject(new NotFoundError(4007, "There is no event with the inserted code."))
             }
 
-            //Temporary access code
-            accessCode = "123456789"
+            //Check if access code exists
+            let existingCode = await AccessCode.findOne({ where: { eventId: event.id, code: accessCode }})
+            
+            if(existingCode == null){
+                return Promise.reject(new BadRequestError(4008, "The access code is invalid for this event."))
+            }
+
+            existingCode.used = true
+            existingCode.save()
 
             let res = await UserEvent.create({ userId: userId, eventId: event.id, accessCode: accessCode })
 
@@ -116,7 +125,7 @@ export class Events implements EventsInterface{
             }
 
             if(user.roleId != RoleEnum.ORGANIZER){
-                return Promise.reject(new BadRequestError(4009, "The user you are trying to register is not a organizer."))
+                return Promise.reject(new BadRequestError(4010, "The user you are trying to register is not a organizer."))
             }
 
             let newEvent = await Event.create(object)
@@ -128,7 +137,7 @@ export class Events implements EventsInterface{
             let errorRes: Error
             if(error instanceof ValidationError){
                 let msg = error.errors[0].message
-                errorRes = new BadRequestError(4008, msg)
+                errorRes = new BadRequestError(4009, msg)
             }else{
                 errorRes = new InternalError(500, error)
             }
@@ -212,7 +221,7 @@ export class Events implements EventsInterface{
             const relation: UserEvent|null = await UserEvent.findOne({ where: { userId: userId, eventId: id } })
 
             if( relation == null ){
-                return Promise.reject(new NotPermittedError(4010, "You don't have access to this event."))
+                return Promise.reject(new NotPermittedError(4011, "You don't have access to this event."))
             }
 
             //remove null data
