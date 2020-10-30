@@ -59,7 +59,21 @@ export class AccessCodes implements AccessCodeInterface{
         throw new Error("Method not implemented.");
     }
 
-    async getAllFromEvent(eventId: number): Promise<Result> {
-        throw new Error("Method not implemented.");
+    async getAllFromEvent(eventId: number, userId:number): Promise<Result> {
+        try {
+
+            const relation: UserEvent|null = await UserEvent.findOne({ where: { userId: userId, eventId: eventId } })
+
+            if( relation == null || (!relation.isOwner && !relation.isCollaborator) ){
+                return Promise.reject(new NotPermittedError(4003, "You can't modify a event that is not yours."))
+            }
+
+            const accessCodes = await AccessCode.findAll( { where: { eventId: eventId } } )
+
+            return Promise.resolve({success: true, data: accessCodes})
+
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
     }
 }

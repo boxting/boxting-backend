@@ -4,5 +4,5 @@ export interface AccessCode{
     addOnEvent(codes:string[], eventId:number, userId:number): Promise<Result>
     updateOnEvent(codes:string[], eventId:number): Promise<Result>
     deleteAllFromEvent(eventId:number): Promise<Result>
-    getAllFromEvent(eventId:number): Promise<Result>
+    getAllFromEvent(eventId:number, userId:number): Promise<Result>
 }

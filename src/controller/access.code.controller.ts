@@ -17,3 +17,16 @@ export async function handleCreateAccessCodesOnEvent(req: Request, res: Response
         next(error)
     }
 }
+
+export async function handleGetAccessCodesFromEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+        const {event, codes} = req.body
+        const tokenRequest = req as TokenRequest
+        const userId = tokenRequest.user.id
+
+        const data = await accessCodes.getAllFromEvent(event, userId)
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
