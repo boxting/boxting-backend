@@ -127,7 +127,7 @@ export class Events implements EventsInterface{
             if(user.roleId != RoleEnum.ORGANIZER){
                 return Promise.reject(new BadRequestError(4010, "The user you are trying to register is not a organizer."))
             }
-            
+
             let startDate = objEvent.startDate.getTime()
             let endDate = objEvent.endDate.getTime()
 
@@ -173,7 +173,7 @@ export class Events implements EventsInterface{
             const event: Event|null = await Event.findOne({ where: { id: id }})
 
             if( event != null ){
-                if( event.startDate.getTime() <= Date.now() ){
+                if( event.startDate.getTime() <= Date.now() && event.endDate.getTime() > Date.now()){
                     return Promise.reject(new BadRequestError(4002, "You can't delete a event that has already started."))
                 }
             }else{
