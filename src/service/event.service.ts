@@ -127,6 +127,15 @@ export class Events implements EventsInterface{
             if(user.roleId != RoleEnum.ORGANIZER){
                 return Promise.reject(new BadRequestError(4010, "The user you are trying to register is not a organizer."))
             }
+            
+            let startDate = objEvent.startDate.getTime()
+            let endDate = objEvent.endDate.getTime()
+
+            if( startDate <= Date.now() ){
+                return Promise.reject(new BadRequestError(4004, "The start date cannot be before current date."))
+            }else if( startDate >= endDate){
+                return Promise.reject(new BadRequestError(4005, "The end date cannot be before start date."))
+            }
 
             let newEvent = await Event.create(object)
             await UserEvent.create({ userId: userId, eventId: newEvent.id, isOwner: true})
