@@ -13,6 +13,7 @@ import { clearData } from "../utils/clear.response";
 import { NotPermittedError } from "../error/not.permitted.error";
 import { createToken } from "../utils/create.token";
 import { Event } from "../model/event.model";
+import axios from "axios"
 
 export class Users implements UserInterface{
     
@@ -341,5 +342,29 @@ export class Users implements UserInterface{
         } catch (error) {
             return Promise.reject(new InternalError(500, error))
         }
+    }
+
+    async checkUserDni(userDni: string) {
+
+        try {
+            const base = "https://api.reniec.cloud/dni/"
+
+            if(userDni.trim().length == 0 || userDni.trim().length < 8){
+                return Promise.reject(new BadRequestError(2008, "The ID length is incorrect"))
+            }
+
+            const url = base + userDni
+            let res = await axios.get(url)
+
+            if(res.data == null){
+                return Promise.reject(new BadRequestError(2009, "No matching ID information was found"))
+            }
+
+            return Promise.resolve({ success:true, data: res.data })
+
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+        
     }
 }

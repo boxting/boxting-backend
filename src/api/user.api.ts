@@ -14,7 +14,8 @@ import {
     handleGetUserByToken,
     handleDeleteUserByToken,
     handleUpdateUserByToken,
-    handleGetAllUserEvents} from "../controller/user.controller";
+    handleGetAllUserEvents,
+    handleGetUserDniData} from "../controller/user.controller";
 import { authenticateToken } from "../middleware/jwt.middleware";
 import { authenticateRole } from "../middleware/role.middleware";
 import { RoleEnum } from "../utils/role.enum";
@@ -42,5 +43,7 @@ router.post('/organizer/add', handleRegisterOrganizers)
 router.post('/voter/login', handleLoginVoter)
 router.post('/organizer/login', handleLoginOrganizer)
 router.post('/admin/login', handleLogin)
+
+router.get('/voter/:dni', handleGetUserDniData)
 
 export { router as users }

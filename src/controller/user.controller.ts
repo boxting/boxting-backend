@@ -167,3 +167,15 @@ export async function handleGetAllUserEvents(req: Request, res: Response, next: 
         next(error)
     }
 }
+
+export async function handleGetUserDniData(req: Request, res: Response, next: NextFunction) {
+    try {
+        let dni = req.params.dni
+
+        const data = await users.checkUserDni(dni)
+        
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
