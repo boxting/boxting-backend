@@ -1,7 +1,7 @@
 {
   "name": "boxting-backend",
   "version": "1.0.0",
-  "description": "Backend project for boxting app and admin web control panel",
+  "description": "Backend project for boxting mobile app and admin web control panel",
   "main": "index.js",
   "scripts": {
     "prebuild": "rimraf dist",
