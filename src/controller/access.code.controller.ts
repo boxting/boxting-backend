@@ -1,18 +1,19 @@
 import { NextFunction, Request, Response } from "express";
 import Status from "http-status-codes"
 import { Payload, TokenRequest } from "../interface/request.interface";
-import { AccessCodes } from "../service/access.code.service";
+import { AccessCodeService } from "../service/access.code.service";
+import { checkUserEventOwnership } from "../service/validators/access.code.validator";
 
-const accessCodes = new AccessCodes()
+const accessCodes = new AccessCodeService()
 
 export async function handleCreateAccessCodesOnEvent(req: Request, res: Response, next: NextFunction) {
     try {
-        const event = req.params.eventId
-        const {codes} = req.body
+        const event = Number(req.params.eventId)
+        const { codes } = req.body
         const tokenRequest = req as TokenRequest
         const userId = tokenRequest.user.id
 
-        const data = await accessCodes.addOnEvent(codes, Number(event), userId)
+        const data = await accessCodes.addToEvent(codes, event, userId)
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -21,11 +22,11 @@ export async function handleCreateAccessCodesOnEvent(req: Request, res: Response
 
 export async function handleGetAccessCodesFromEvent(req: Request, res: Response, next: NextFunction) {
     try {
-        const event = req.params.eventId
+        const event = Number(req.params.eventId)
         const tokenRequest = req as TokenRequest
         const userId = tokenRequest.user.id
 
-        const data = await accessCodes.getAllFromEvent(Number(event), userId)
+        const data = await accessCodes.getAllFromEvent(event)
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -34,11 +35,11 @@ export async function handleGetAccessCodesFromEvent(req: Request, res: Response,
 
 export async function handleDeleteAllNotUsedFromEvent(req: Request, res: Response, next: NextFunction) {
     try {
-        const event = req.params.eventId
+        const event = Number(req.params.eventId)
         const tokenRequest = req as TokenRequest
         const userId = tokenRequest.user.id
 
-        const data = await accessCodes.deleteAllNotUsedFromEvent(Number(event), userId)
+        const data = await accessCodes.deleteAllNotUsedFromEvent(event)
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -47,12 +48,15 @@ export async function handleDeleteAllNotUsedFromEvent(req: Request, res: Respons
 
 export async function handleDeleteOneFromEvent(req: Request, res: Response, next: NextFunction) {
     try {
-        const event = req.params.eventId
-        const code = req.params.codeId
+        const eventId = Number(req.params.eventId)
+        const codeId = Number(req.params.codeId)
+
         const tokenRequest = req as TokenRequest
         const userId = tokenRequest.user.id
 
-        const data = await accessCodes.deleteOneOnEvent(Number(code), Number(event), userId)
+        await checkUserEventOwnership(eventId, userId)
+
+        const data = await accessCodes.deleteOneOnEvent(codeId)
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -61,13 +65,16 @@ export async function handleDeleteOneFromEvent(req: Request, res: Response, next
 
 export async function handleUpdateOneFromEvent(req: Request, res: Response, next: NextFunction) {
     try {
-        const event = req.params.eventId
-        const code = req.params.codeId
-        const {newCode} = req.body
+        const eventId = Number(req.params.eventId)
+        const codeId = Number(req.params.codeId)
+
+        const { newCode } = req.body
         const tokenRequest = req as TokenRequest
         const userId = tokenRequest.user.id
 
-        const data = await accessCodes.updateOneOnEvent(Number(code), Number(event), userId, newCode)
+        await checkUserEventOwnership(eventId, userId)
+
+        const data = await accessCodes.updateOneOnEvent(codeId, eventId, newCode)
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)

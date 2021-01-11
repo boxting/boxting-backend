@@ -2,9 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import Status from "http-status-codes"
 import { Payload, TokenRequest } from "../interface/request.interface";
 import { Event } from "../model/event.model";
-import { Events } from "../service/event.service";
+import { EventService } from "../service/event.service";
 
-const events = new Events()
+const events = new EventService()
 
 export async function handleGetAllEvents(req: Request, res: Response, next: NextFunction) {
     try {
@@ -136,14 +136,14 @@ export async function handleSuscribeVoterWithToken(req: Request, res: Response, 
 
 export async function handleAddCollaborator(req: Request, res: Response, next: NextFunction) {
     try {
-        const id = req.params.id
+        const eventId = req.params.id
         const user = req.body
 
         const tokenRequest = req as TokenRequest
         const roleId = tokenRequest.user.role
         const userId = tokenRequest.user.id
 
-        const data = await events.registerCollaborator(user, Number(id), roleId, userId)
+        const data = await events.registerCollaborator(user, Number(eventId), roleId, userId)
 
         res.status(Status.OK).send(data)
     } catch (error) {
