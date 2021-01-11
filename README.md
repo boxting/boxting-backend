@@ -1,2 +1,3 @@
 # boxting-backend
-Backend for boxting app and admin web app.
+
+Backend for boxting mobile app and admin web app.
