@@ -6,7 +6,6 @@ branches:
     - develop
 deploy:
   provider: heroku
-  skip_cleanup: true
   on:
     branch: master
   api_key:
