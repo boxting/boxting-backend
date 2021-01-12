@@ -20,6 +20,7 @@ import { MailingService } from "./mailing.service";
 import { ValidationError, UniqueConstraintError } from "sequelize";
 import bcrypt from "bcrypt"
 import axios from "axios"
+import crypto from "crypto"
 
 export class LoginService implements LoginInterface {
 
@@ -199,10 +200,25 @@ export class LoginService implements LoginInterface {
         }
     }
 
-    async recoverPassword(): Promise<Result>{
+    async forgotPassword(userMail:string): Promise<Result>{
         try {
-            return Promise.resolve({success:true, data: ''})
+            // Find user with provided mail
+            const user = await User.scope('login').findOne({ where: { '$Voter.mail$': userMail },  })
+
+            if(user == null){
+                return Promise.reject(new BadRequestError(1004, 'The mail inserted is not registered' ))
+            }
+
+            var newPassword = crypto.randomBytes(10).toString('hex')
+
+            await this.mailingService.sendRecoverPasswordMail(userMail, newPassword, user.username)
+
+            user.password = bcrypt.hashSync(newPassword, 10)
+            await user.save()
+
+            return Promise.resolve({success:true, data: 'New temporal password sent to mail'})
         } catch (error) {
+            console.log(error)
             return Promise.reject(new InternalError(500, error))
         }
     }
