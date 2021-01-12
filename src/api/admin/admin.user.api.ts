@@ -16,6 +16,6 @@ router.get('/all', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handle
 router.delete('/all', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleDeleteUsers)
 router.get('/id/:id', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleGetUserById) 
 router.delete('/id/:id', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleDeleteUserById)
-router.put('id/:id', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleUpdateUser)
+router.put('/id/:id', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleUpdateUser)
 
 export { router as adminUserApi }
