@@ -15,6 +15,7 @@ import { clearData } from "../utils/clear.response";
 import { createToken } from "../utils/create.token";
 // Service
 import { UserService } from "./user.service";
+import { MailingService } from "./mailing.service";
 // Package Imports
 import { ValidationError, UniqueConstraintError } from "sequelize";
 import bcrypt from "bcrypt"
@@ -23,9 +24,11 @@ import axios from "axios"
 export class LoginService implements LoginInterface {
 
     private userService: UserService
+    private mailingService: MailingService
 
     constructor() {
         this.userService = new UserService()
+        this.mailingService = new MailingService()
     }
 
     async registerVoter(user: User): Promise<Result> {
@@ -191,6 +194,14 @@ export class LoginService implements LoginInterface {
             res['token'] = token
 
             return Promise.resolve({ success: true, data: res })
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async recoverPassword(): Promise<Result>{
+        try {
+            return Promise.resolve({success:true, data: ''})
         } catch (error) {
             return Promise.reject(new InternalError(500, error))
         }
