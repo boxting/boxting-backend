@@ -211,7 +211,11 @@ export class LoginService implements LoginInterface {
 
             var newPassword = crypto.randomBytes(10).toString('hex')
 
-            await this.mailingService.sendRecoverPasswordMail(userMail, newPassword, user.username)
+            let firstName = user.voter?.firstName.split(' ')[0]
+            let firstLastName = user.voter?.lastName.split(' ')[0]
+            let name = firstName + ' ' + firstLastName
+
+            await this.mailingService.sendRecoverPasswordMail(userMail, newPassword, name)
 
             user.password = bcrypt.hashSync(newPassword, 10)
             await user.save()
