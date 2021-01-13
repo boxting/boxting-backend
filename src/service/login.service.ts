@@ -5,6 +5,7 @@ import { Result } from "../interface/result.interface";
 import { InternalError } from "../error/base.error"
 import { BadRequestError } from "../error/bad.request.error";
 import { NotPermittedError } from "../error/not.permitted.error";
+import { NotFoundError } from "../error/not.found.error";
 // Models
 import { Voter } from "../model/voter.model";
 import { Organizer } from "../model/organizer.model";
@@ -46,7 +47,7 @@ export class LoginService implements LoginInterface {
             }
 
             // Encrypt password to protect data
-            user.password = bcrypt.hashSync(user.password, 10)
+            user.password = await bcrypt.hash(user.password, 10)
 
             // Check if voter is valid before creating user
             let newVoter: Voter = new Voter(user.voter)
@@ -109,7 +110,7 @@ export class LoginService implements LoginInterface {
             }
 
             // Encrypt password to protect data
-            user.password = bcrypt.hashSync(user.password, 10)
+            user.password = await bcrypt.hash(user.password, 10)
 
             //Check if organizer is valid before creating user
             let newOrganizer: Organizer = new Organizer(user.organizer)
@@ -183,7 +184,7 @@ export class LoginService implements LoginInterface {
                 return Promise.reject(new NotPermittedError(1003))
             }
 
-            if (!bcrypt.compareSync(password, user.password)) {
+            if (!await bcrypt.compare(password, user.password)) {
                 return Promise.reject(new BadRequestError(1002, "The password inserted is incorrect"))
             }
 
@@ -206,7 +207,7 @@ export class LoginService implements LoginInterface {
             const user = await User.scope('login').findOne({ where: { '$Voter.mail$': userMail }, })
 
             if (user == null) {
-                return Promise.reject(new BadRequestError(1004, 'The mail inserted is not registered'))
+                return Promise.reject(new NotFoundError(1004, 'The mail inserted is not registered'))
             }
 
             // Generate new random password
@@ -221,7 +222,7 @@ export class LoginService implements LoginInterface {
             await this.mailingService.sendRecoverPasswordMail(userMail, newPassword, name)
 
             // Update password on database
-            user.password = bcrypt.hashSync(newPassword, 10)
+            user.password = await bcrypt.hash(newPassword, 10)
             await user.save()
             
             return Promise.resolve({ success: true, data: 'New temporal password sent to mail' })
