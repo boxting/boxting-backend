@@ -200,27 +200,31 @@ export class LoginService implements LoginInterface {
         }
     }
 
-    async forgotPassword(userMail:string): Promise<Result>{
+    async forgotPassword(userMail: string): Promise<Result> {
         try {
             // Find user with provided mail
-            const user = await User.scope('login').findOne({ where: { '$Voter.mail$': userMail },  })
+            const user = await User.scope('login').findOne({ where: { '$Voter.mail$': userMail }, })
 
-            if(user == null){
-                return Promise.reject(new BadRequestError(1004, 'The mail inserted is not registered' ))
+            if (user == null) {
+                return Promise.reject(new BadRequestError(1004, 'The mail inserted is not registered'))
             }
 
+            // Generate new random password
             var newPassword = crypto.randomBytes(10).toString('hex')
 
+            // Get user name for email
             let firstName = user.voter?.firstName.split(' ')[0]
             let firstLastName = user.voter?.lastName.split(' ')[0]
             let name = firstName + ' ' + firstLastName
 
+            // Send mail using mailing service
             await this.mailingService.sendRecoverPasswordMail(userMail, newPassword, name)
 
+            // Update password on database
             user.password = bcrypt.hashSync(newPassword, 10)
             await user.save()
-
-            return Promise.resolve({success:true, data: 'New temporal password sent to mail'})
+            
+            return Promise.resolve({ success: true, data: 'New temporal password sent to mail' })
         } catch (error) {
             console.log(error)
             return Promise.reject(new InternalError(500, error))

@@ -22,7 +22,7 @@ export class MailingService {
                     pass: process.env.SMTP_PASSWORD
                 }
             });
-
+            console.log('Mailing server connected')
         } catch (error) {
             console.log('Something went wrong trying to connect with SMTP server')
             throw error
