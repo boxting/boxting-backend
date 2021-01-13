@@ -1,6 +1,7 @@
 // Error
 import { NotFoundError } from "../error/not.found.error";
 import { InternalError } from "../error/base.error"
+import { BadRequestError } from "../error/bad.request.error";
 // Interface
 import { Result } from "../interface/result.interface";
 import { UserInterface } from "../interface/service/user.interface"
@@ -78,7 +79,7 @@ export class UserService implements UserInterface {
     async update(id: string, object: User): Promise<Result> {
         try {
             if (object.password != null) {
-                object.password = bcrypt.hashSync(object.password, 10)
+                object.password = await bcrypt.hash(object.password, 10)
             }
 
             let changes = await User.update(object, { where: { id: id } })
@@ -112,6 +113,31 @@ export class UserService implements UserInterface {
 
             return Promise.resolve({ success: true, data: res })
 
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async updatePassword(userId: number, oldPassword: string, newPassword: string): Promise<Result> {
+        try {
+            // Find user with specified id
+            const user = await User.findByPk(userId)
+
+            // Check if user was found
+            if (user == null) {
+                return Promise.reject(new NotFoundError(3001, "No user found with this id"))
+            }
+
+            // Verify if oldPassword is the same as the one in database
+            if (!await bcrypt.compare(oldPassword, user.password)) {
+                return Promise.reject(new BadRequestError(3002, "The old password inserted is incorrect"))
+            }
+
+            // Update user password
+            user.password = await bcrypt.hash(newPassword, 10)
+            user.save()
+
+            return Promise.resolve({ success: true, data: "Password updated!" })
         } catch (error) {
             return Promise.reject(new InternalError(500, error))
         }
