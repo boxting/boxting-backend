@@ -114,3 +114,18 @@ export async function handleUpdateUserWithToken(req: Request, res: Response, nex
         next(error)
     }
 }
+
+export async function handleUpdatePassword(req: Request, res: Response, next: NextFunction) {
+    try {
+        const tokenRequest = req as TokenRequest
+
+        const id = tokenRequest.user.id
+        const { oldPassword, newPassword } = req.body
+
+        const data = await users.updatePassword(id, oldPassword, newPassword)
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}

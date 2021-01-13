@@ -74,3 +74,13 @@ export async function handleGetDniInformation(req: Request, res: Response, next:
         next(error)
     }
 }
+
+export async function handleForgotPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+        const { mail } = req.body
+        const data = await loginService.forgotPassword(mail)
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
