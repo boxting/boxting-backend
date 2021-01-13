@@ -204,7 +204,7 @@ export class LoginService implements LoginInterface {
     async forgotPassword(userMail: string): Promise<Result> {
         try {
             // Find user with provided mail
-            const user = await User.scope('login').findOne({ where: { '$Voter.mail$': userMail }, })
+            const user = await User.scope('login').findOne({ where: { '$voter.mail$': userMail }, })
 
             if (user == null) {
                 return Promise.reject(new NotFoundError(1004, 'The mail inserted is not registered'))
