@@ -146,13 +146,12 @@ export class UserService implements UserInterface {
     /*****   Internal Service Functions   *****/
     // This functions are only used by other functions as query provider
 
-    async getUserByDniOrEmail(mail: string, dni: string): Promise<Voter | null> {
+    async getUserByDni(dni: string): Promise<Voter | null> {
         try {
             // Get a voter with matching mail or dni
             let voter = await Voter.findOne({
                 where: {
                     [Op.or]: [
-                        { mail: mail },
                         { dni: dni }
                     ]
                 }

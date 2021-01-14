@@ -54,14 +54,10 @@ export class LoginService implements LoginInterface {
             await newVoter.validate()
 
             // Check if exists a voter with provided mail or dni
-            let existingVoter = await this.userService.getUserByDniOrEmail(user.voter.mail, user.voter.dni)
+            let existingVoter = await this.userService.getUserByDni(user.voter.dni)
 
             if (existingVoter != null) {
-                if (existingVoter.mail == user.voter.mail) {
-                    return Promise.reject(new BadRequestError(2005, "Mail is already registered"))
-                } else {
-                    return Promise.reject(new BadRequestError(2006, "Dni is already registered"))
-                }
+                return Promise.reject(new BadRequestError(2006, "Dni is already registered"))
             }
 
             // Assign voter role
@@ -204,7 +200,7 @@ export class LoginService implements LoginInterface {
     async forgotPassword(userMail: string): Promise<Result> {
         try {
             // Find user with provided mail
-            const user = await User.scope('login').findOne({ where: { '$voter.mail$': userMail }, })
+            const user = await User.scope('login').findOne({ where: { mail: userMail } })
 
             if (user == null) {
                 return Promise.reject(new NotFoundError(1004, 'The mail inserted is not registered'))
