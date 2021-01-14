@@ -37,17 +37,6 @@ export class Voter extends Model<Voter>{
         allowNull: false,
         validate:{
             notEmpty:true,
-            isEmail:true,
-            len: [5, 50]
-        },
-        unique: true
-    })
-    mail!: string
-
-    @Column({
-        allowNull: false,
-        validate:{
-            notEmpty:true,
             isNumeric:true,
             len: [9, 15]
         }

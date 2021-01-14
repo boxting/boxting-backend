@@ -7,7 +7,7 @@ import { Voter } from "./voter.model"
 
 @Scopes(() => ({
     full: {
-        attributes: ["id", "username", "isActive"],
+        attributes: ["id", "username", "mail", "isActive"],
         include: [
             {
                 model: Role,
@@ -28,7 +28,7 @@ import { Voter } from "./voter.model"
         ],
     },
     login:{
-        attributes: ["id", "username", "password", "roleId"],
+        attributes: ["id", "username", "password", "mail", "roleId"],
         include: [
             {
                 model: Role,
@@ -69,6 +69,17 @@ export class User extends Model<User>{
         }
     })
     password!: string
+
+    @Column({
+        allowNull: false,
+        validate:{
+            notEmpty:true,
+            isEmail:true,
+            len: [5, 50]
+        },
+        unique: true
+    })
+    mail!: string
 
     @Column({
         allowNull: true,
