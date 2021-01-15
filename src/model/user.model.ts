@@ -47,6 +47,23 @@ import { Voter } from "./voter.model"
                 }
             }
         ],
+    },
+    update:{
+        attributes: ["id", "username", "mail", "roleId"],
+        include: [
+            {
+                model: Voter,
+                attributes: {
+                    exclude: ["createdAt", "updatedAt", "userId"],
+                }
+            },
+            {
+                model: Organizer,
+                attributes: {
+                    exclude: ["createdAt", "updatedAt", "userId"],
+                }
+            }
+        ],
     }
 }))
 @Table
