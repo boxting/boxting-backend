@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import Status from "http-status-codes"
 import { Payload, TokenRequest } from "../interface/request.interface";
 import { AccessCodeService } from "../service/access.code.service";
-import { checkUserEventOwnership } from "../service/validators/access.code.validator";
+import { checkUserEventOwnershipOrCollaboration } from "../service/validators/event.validator";
 
 const accessCodes = new AccessCodeService()
 
@@ -54,7 +54,7 @@ export async function handleDeleteOneFromEvent(req: Request, res: Response, next
         const tokenRequest = req as TokenRequest
         const userId = tokenRequest.user.id
 
-        await checkUserEventOwnership(eventId, userId)
+        await checkUserEventOwnershipOrCollaboration(eventId, userId)
 
         const data = await accessCodes.deleteOneOnEvent(codeId)
         res.status(Status.OK).send(data)
@@ -72,7 +72,7 @@ export async function handleUpdateOneFromEvent(req: Request, res: Response, next
         const tokenRequest = req as TokenRequest
         const userId = tokenRequest.user.id
 
-        await checkUserEventOwnership(eventId, userId)
+        await checkUserEventOwnershipOrCollaboration(eventId, userId)
 
         const data = await accessCodes.updateOneOnEvent(codeId, eventId, newCode)
         res.status(Status.OK).send(data)
