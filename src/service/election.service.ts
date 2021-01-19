@@ -1,5 +1,4 @@
 // Error
-import { where } from "sequelize/types";
 import { BadRequestError } from "../error/bad.request.error";
 import { InternalError } from "../error/base.error";
 import { NotFoundError } from "../error/not.found.error";
@@ -95,7 +94,7 @@ export class ElectionService implements ElectionInterface {
             // Cannot update eventId
             newElection.eventId = election.eventId
 
-            await Election.update(newElection, { where: { id: election.id! } })
+            await Election.update(newElection, { where: { id: id } })
 
             // Remove null data
             const res = clearData(election)
