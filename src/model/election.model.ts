@@ -24,6 +24,16 @@ export class Election extends Model<Election>{
     })
     information!: string
 
+    @Column({
+        allowNull: false,
+        unique: false,
+        validate:{
+            notEmpty:true,
+            isInt:true
+        }
+    })
+    winners!: number
+
     @CreatedAt
     createdAt!: Date
 
