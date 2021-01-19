@@ -1,10 +1,10 @@
 import { BelongsTo, Column, Model, CreatedAt, ForeignKey, Table, UpdatedAt, HasMany } from "sequelize-typescript"
+import { Election } from "./election.model"
 import { Event } from "./event.model"
-import { List } from "./list.model"
-import { Type } from "./type.model"
+import { Candidate } from "./candidate.model"
 
 @Table
-export class Election extends Model<Election>{
+export class List extends Model<List>{
 
     @Column({
         allowNull: false,
@@ -27,14 +27,14 @@ export class Election extends Model<Election>{
     information!: string
 
     @Column({
-        allowNull: false,
+        allowNull: true,
         unique: false,
         validate:{
             notEmpty:true,
-            isInt:true
+            len:[3,255]
         }
     })
-    winners!: number
+    imageUrl!: string
 
     @CreatedAt
     createdAt!: Date
@@ -42,24 +42,15 @@ export class Election extends Model<Election>{
     @UpdatedAt
     updatedAt!: Date
 
-    @ForeignKey(() => Event)
+    @ForeignKey(() => Election)
     @Column({
         allowNull: false
     })
-    eventId!: number
+    electionId!: number
 
-    @BelongsTo(() => Event)
-    event?: Event
+    @BelongsTo(() => Election)
+    election?: Event
 
-    @ForeignKey(() => Type)
-    @Column({
-        allowNull: false
-    })
-    typeId!: number
-
-    @BelongsTo(() => Type)
-    type?: Type
-
-    @HasMany(() => List)
-    lists? : List[]
+    @HasMany(() => Candidate)
+    candidates? : Candidate[]
 }

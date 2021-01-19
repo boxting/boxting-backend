@@ -9,6 +9,9 @@ import { Role } from "../model/role.model";
 import { UserEvent } from "../model/user.event.model";
 import { User } from "../model/user.model";
 import { Voter } from "../model/voter.model";
+import { Type } from "../model/type.model";
+import { List } from "../model/list.model";
+import { Candidate } from "../model/candidate.model";
 
 export class MySequelize {
 
@@ -31,7 +34,10 @@ export class MySequelize {
                     underscored: true
                 },
             })
-            this.conn.addModels([Role, User, Voter, Organizer, Event, UserEvent, AccessCode, Election])
+            this.conn.addModels([
+                Role, User, Voter, Organizer, Event, UserEvent, 
+                AccessCode, Election, Type, List, Candidate
+            ])
 
             if (process.env.RUN_CREATION && process.env.RUN_CREATION == "true") {
                 this.syncDatabase()
