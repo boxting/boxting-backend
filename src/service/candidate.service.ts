@@ -1,8 +1,7 @@
 // Error
-import { BadRequestError } from "../error/bad.request.error";
 import { InternalError } from "../error/base.error";
 import { NotFoundError } from "../error/not.found.error";
-import { NotPermittedError } from "../error/not.permitted.error";
+import { Payload } from "../interface/request.interface";
 // Interface
 import { Result } from '../interface/result.interface';
 import { CandidateInterface } from '../interface/service/candidate.interface'
@@ -10,6 +9,10 @@ import { CandidateInterface } from '../interface/service/candidate.interface'
 import { Candidate } from '../model/candidate.model';
 // Utils
 import { clearData } from '../utils/clear.response';
+import { RoleEnum } from "../utils/role.enum";
+// Validators
+import { ElectionValidator } from "./validators/election.validator";
+import { ListValidator } from "./validators/list.validator";
 
 export class CandidateService implements CandidateInterface {
 
@@ -102,6 +105,219 @@ export class CandidateService implements CandidateInterface {
 
             return Promise.resolve({ success: true, data: res })
         } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async getFromList(listId: number) {
+        try {
+            // Check if list exists
+            await ListValidator.checkIfExists(listId)
+
+            // Find all candidates
+            let candidates = await Candidate.findAll({ where: { listId: listId } })
+
+            // Remove null data
+            const res = clearData(candidates)
+
+            return Promise.resolve({ success: true, data: res })
+        } catch (error) {
+
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async getFromElection(electionId: number) {
+        try {
+            // Check if election exists
+            await ElectionValidator.checkIfExists(electionId)
+
+            // Find all candidates
+            let candidates = await Candidate.findAll({ where: { electionId: electionId } })
+
+            // Remove null data
+            const res = clearData(candidates)
+
+            return Promise.resolve({ success: true, data: res })
+        } catch (error) {
+
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async getFromListWithRole(userPayload: Payload, listId: number) {
+        try {
+
+            // Check if list exists
+            const list = await ListValidator.checkIfExists(listId)
+
+            // If user is not admin, validate ownership or participation
+            if (userPayload.role != RoleEnum.ADMIN) {
+                if (userPayload.role == RoleEnum.VOTER) {
+                    // Validate if user is suscribed to the event
+                    await ElectionValidator.checkParticipation(list.election!.eventId, userPayload.id)
+                } else {
+                    // Validate if user is owner or collaborator of the event
+                    await ElectionValidator.checkUserOwnershipOrCollaboration(list.election!.eventId, userPayload.id)
+                }
+            }
+
+            // Get all the candidates from List
+            let res = await this.getFromList(listId)
+
+            return Promise.resolve(res)
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async getFromElectionWithRole(userPayload: Payload, electionId: number) {
+        try {
+
+            // Check if election exists
+            const election = await ElectionValidator.checkIfExists(electionId)
+
+            // If user is not admin, validate ownership or participation
+            if (userPayload.role != RoleEnum.ADMIN) {
+                if (userPayload.role == RoleEnum.VOTER) {
+                    // Validate if user is suscribed to the event
+                    await ElectionValidator.checkParticipation(election.eventId, userPayload.id)
+                } else {
+                    // Validate if user is owner or collaborator of the event
+                    await ElectionValidator.checkUserOwnershipOrCollaboration(election.eventId, userPayload.id)
+                }
+            }
+
+            // Get all the candidates from Election
+            let res = await this.getFromElection(electionId)
+
+            return Promise.resolve(res)
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async addWithRole(userPayload: Payload, listId: number, candidate: Candidate) {
+        try {
+
+            // Check if list exists and event has not started yet
+            const list = await ListValidator.checkIfExistsAndStarted(listId)
+
+            // Add static ids to new candidate object
+            candidate.electionId = list.electionId
+            candidate.listId = listId
+
+            // If user is not admin, validate ownership
+            if (userPayload.role != RoleEnum.ADMIN) {
+                // Validate if user is owner or collaborator of the event
+                await ElectionValidator.checkUserOwnershipOrCollaboration(list.election!.eventId, userPayload.id)
+            }
+
+            // Create the candidate
+            let res = await this.add(candidate)
+
+            return Promise.resolve(res)
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async getByIdWithRole(userPayload: Payload, candidateId: number, listId: number) {
+        try {
+
+            // Check if list exists
+            const list = await ListValidator.checkIfExists(listId)
+
+            // If user is not admin, validate ownership or participation
+            if (userPayload.role != RoleEnum.ADMIN) {
+                if (userPayload.role == RoleEnum.VOTER) {
+                    // Validate if user is suscribed to the event
+                    await ElectionValidator.checkParticipation(list.election!.eventId, userPayload.id)
+                } else {
+                    // Validate if user is owner or collaborator of the event
+                    await ElectionValidator.checkUserOwnershipOrCollaboration(list.election!.eventId, userPayload.id)
+                }
+            }
+
+            // Get candidate
+            let res = await this.getById(candidateId.toString())
+
+            return Promise.resolve(res)
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async updateWithRole(userPayload: Payload, listId: number, candidateId: number, candidate: Candidate) {
+        try {
+
+            // Check if list exists and has not started yet
+            const list = await ListValidator.checkIfExistsAndStarted(listId)
+
+            // If user is not admin, validate ownership
+            if (userPayload.role != RoleEnum.ADMIN) {
+                // Validate if user is owner or collaborator of the event
+                await ElectionValidator.checkUserOwnershipOrCollaboration(list.election!.eventId, userPayload.id)
+            }
+
+            // Update the candidate
+            let res = await this.update(candidateId.toString(), candidate)
+
+            return Promise.resolve(res)
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async deleteWithRole(userPayload: Payload, listId: number, candidateId: number) {
+        try {
+
+            // Check if list exists
+            const list = await ListValidator.checkIfExistsAndStarted(listId)
+
+            // If user is not admin, validate ownership
+            if (userPayload.role != RoleEnum.ADMIN) {
+                // Validate if user is owner of the event
+                await ElectionValidator.checkUserOwnership(list.election!.eventId, userPayload.id)
+            }
+
+            // Delete the candidate
+            let res = await this.delete(candidateId.toString())
+
+            return Promise.resolve(res)
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
             return Promise.reject(new InternalError(500, error))
         }
     }
