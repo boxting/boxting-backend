@@ -113,7 +113,7 @@ export class ListService implements ListInterface {
             // Check if election exists
             await ElectionValidator.checkIfExists(electionId)
 
-            // Find all elections
+            // Find all lists
             let lists = await List.findAll({ where: { electionId: electionId } })
 
             // Remove null data
@@ -147,7 +147,7 @@ export class ListService implements ListInterface {
                 }
             }
 
-            // Get all the elections from Election
+            // Get all the lists from Election
             let res = await this.getFromElection(electionId)
 
             return Promise.resolve(res)
@@ -175,7 +175,7 @@ export class ListService implements ListInterface {
                 await ElectionValidator.checkUserOwnershipOrCollaboration(election.eventId, userPayload.id)
             }
 
-            // Create the election
+            // Create the list
             let res = await this.add(list)
 
             return Promise.resolve(res)
@@ -255,7 +255,7 @@ export class ListService implements ListInterface {
                 await ElectionValidator.checkUserOwnership(election.eventId, userPayload.id)
             }
 
-            // Get all the elections from Election
+            // Delete list
             let res = await this.delete(listId.toString())
 
             return Promise.resolve(res)

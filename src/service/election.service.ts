@@ -207,7 +207,7 @@ export class ElectionService implements ElectionInterface {
                 }
             }
 
-            // Get all the elections from Event
+            // Get election
             let res = await this.getById(electionId.toString())
 
             return Promise.resolve(res)
@@ -232,7 +232,7 @@ export class ElectionService implements ElectionInterface {
                 await EventValidator.checkUserOwnershipOrCollaboration(eventId, userPayload.id)
             }
 
-            // Create the election
+            // Update the election
             let res = await this.update(electionId.toString(), election)
 
             return Promise.resolve(res)
@@ -257,7 +257,7 @@ export class ElectionService implements ElectionInterface {
                 await EventValidator.checkUserOwnership(eventId, userPayload.id)
             }
 
-            // Get all the elections from Event
+            // Delete the election
             let res = await this.delete(electionId.toString())
 
             return Promise.resolve(res)
