@@ -30,7 +30,7 @@ export class LoginService implements LoginInterface {
 
     constructor() {
         this.userService = new UserService()
-        this.mailingService = new MailingService()
+        this.mailingService = MailingService.getConnection()
     }
 
     async registerVoter(user: User): Promise<Result> {
