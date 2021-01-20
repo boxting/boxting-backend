@@ -269,5 +269,4 @@ export class ElectionService implements ElectionInterface {
             return Promise.reject(new InternalError(500, error))
         }
     }
-
 }
