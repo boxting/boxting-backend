@@ -113,7 +113,7 @@ export class ElectionService implements ElectionInterface {
     async getFromEvent(eventId: number) {
         try {
             // Check if event exists
-            const event = await EventValidator.checkIfExists(eventId)
+            await EventValidator.checkIfExists(eventId)
 
             // Find all elections
             let elections = await Election.findAll({ where: { eventId: eventId } })
@@ -132,16 +132,21 @@ export class ElectionService implements ElectionInterface {
         }
     }
 
-    async getFromEventWithRole(userPayload: Payload, eventId:number){
+    async getFromEventWithRole(userPayload: Payload, eventId: number) {
         try {
 
             // Check if event exists
             await EventValidator.checkIfExists(eventId)
-            
-            // If user is not admin, validate ownership
-            if(userPayload.role != RoleEnum.ADMIN){
-                // Validate if user is owner or collaborator of the event
-                await EventValidator.checkUserOwnershipOrCollaboration(eventId, userPayload.id)
+
+            // If user is not admin, validate ownership or participation
+            if (userPayload.role != RoleEnum.ADMIN) {
+                if (userPayload.role == RoleEnum.VOTER) {
+                    // Validate if user is suscribed to the event
+                    await EventValidator.checkParticipation(eventId, userPayload.id)
+                } else {
+                    // Validate if user is owner or collaborator of the event
+                    await EventValidator.checkUserOwnershipOrCollaboration(eventId, userPayload.id)
+                }
             }
 
             // Get all the elections from Event
@@ -157,7 +162,7 @@ export class ElectionService implements ElectionInterface {
         }
     }
 
-    async addWithRole(userPayload: Payload, eventId:number, election:Election){
+    async addWithRole(userPayload: Payload, eventId: number, election: Election) {
         try {
 
             // Check if event exists and has not started yet
@@ -165,9 +170,9 @@ export class ElectionService implements ElectionInterface {
 
             // Add eventid to new election object
             election.eventId = eventId
-            
+
             // If user is not admin, validate ownership
-            if(userPayload.role != RoleEnum.ADMIN){
+            if (userPayload.role != RoleEnum.ADMIN) {
                 // Validate if user is owner or collaborator of the event
                 await EventValidator.checkUserOwnershipOrCollaboration(eventId, userPayload.id)
             }
@@ -185,16 +190,21 @@ export class ElectionService implements ElectionInterface {
         }
     }
 
-    async getByIdWithRole(userPayload: Payload, eventId:number, electionId: number){
+    async getByIdWithRole(userPayload: Payload, eventId: number, electionId: number) {
         try {
 
             // Check if event exists
             await EventValidator.checkIfExists(eventId)
-            
-            // If user is not admin, validate ownership
-            if(userPayload.role != RoleEnum.ADMIN){
-                // Validate if user is owner or collaborator of the event
-                await EventValidator.checkUserOwnershipOrCollaboration(eventId, userPayload.id)
+
+            // If user is not admin, validate ownership or participation
+            if (userPayload.role != RoleEnum.ADMIN) {
+                if (userPayload.role == RoleEnum.VOTER) {
+                    // Validate if user is suscribed to the event
+                    await EventValidator.checkParticipation(eventId, userPayload.id)
+                } else {
+                    // Validate if user is owner or collaborator of the event
+                    await EventValidator.checkUserOwnershipOrCollaboration(eventId, userPayload.id)
+                }
             }
 
             // Get all the elections from Event
@@ -210,14 +220,14 @@ export class ElectionService implements ElectionInterface {
         }
     }
 
-    async updateWithRole(userPayload: Payload, eventId:number, electionId:number, election:Election){
+    async updateWithRole(userPayload: Payload, eventId: number, electionId: number, election: Election) {
         try {
 
             // Check if event exists and has not started yet
             await EventValidator.checkIfExistsAndStarted(eventId)
-            
+
             // If user is not admin, validate ownership
-            if(userPayload.role != RoleEnum.ADMIN){
+            if (userPayload.role != RoleEnum.ADMIN) {
                 // Validate if user is owner or collaborator of the event
                 await EventValidator.checkUserOwnershipOrCollaboration(eventId, userPayload.id)
             }
@@ -235,14 +245,14 @@ export class ElectionService implements ElectionInterface {
         }
     }
 
-    async deleteWithRole(userPayload: Payload, eventId:number, electionId: number){
+    async deleteWithRole(userPayload: Payload, eventId: number, electionId: number) {
         try {
 
             // Check if event exists
             await EventValidator.checkIfExistsAndStarted(eventId)
-            
+
             // If user is not admin, validate ownership
-            if(userPayload.role != RoleEnum.ADMIN){
+            if (userPayload.role != RoleEnum.ADMIN) {
                 // Validate if user is owner of the event
                 await EventValidator.checkUserOwnership(eventId, userPayload.id)
             }

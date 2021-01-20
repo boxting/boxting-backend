@@ -72,5 +72,19 @@ export class EventValidator {
             return Promise.reject(new InternalError(500, error))
         }
     }
+
+    public static async checkParticipation(eventId: number, userId: number) {
+        try {
+            const relation: UserEvent | null = await UserEvent.findOne({ where: { userId: userId, eventId: eventId } })
+
+            if (relation == null || (relation.accessCode == undefined)) {
+                return Promise.reject(new NotPermittedError(4011, "You don't have access to this event."))
+            }
+
+            return Promise.resolve(true)
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
 }
 
