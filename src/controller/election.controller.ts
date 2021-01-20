@@ -7,7 +7,7 @@ const electionService = new ElectionService()
 
 export async function handleGetAllElections(req: Request, res: Response, next: NextFunction){
     try {
-        const data = electionService.get()
+        const data = await electionService.get()
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -19,7 +19,7 @@ export async function handleGetAllElectionsFromEvent(req: Request, res: Response
         const eventId = req.params.eventId
         const tokenRequest = req as TokenRequest
 
-        const data = electionService.getFromEventWithRole(tokenRequest.user, Number(eventId))
+        const data = await electionService.getFromEventWithRole(tokenRequest.user, Number(eventId))
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -32,7 +32,7 @@ export async function handleAddElection(req: Request, res: Response, next: NextF
         const election = req.body
         const tokenRequest = req as TokenRequest
 
-        const data = electionService.addWithRole(tokenRequest.user, Number(eventId), election)
+        const data = await electionService.addWithRole(tokenRequest.user, Number(eventId), election)
         res.status(Status.CREATED).send(data)
     } catch (error) {
         next(error)
@@ -45,7 +45,7 @@ export async function handleGetElectionById(req: Request, res: Response, next: N
         const electionId = req.params.electionId
         const tokenRequest = req as TokenRequest
 
-        const data = electionService.getByIdWithRole(tokenRequest.user, Number(eventId), Number(electionId))
+        const data = await electionService.getByIdWithRole(tokenRequest.user, Number(eventId), Number(electionId))
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -59,7 +59,7 @@ export async function handleUpdateElectionById(req: Request, res: Response, next
         const election = req.body
         const tokenRequest = req as TokenRequest
 
-        const data = electionService.updateWithRole(tokenRequest.user, Number(eventId), Number(electionId), election)
+        const data = await electionService.updateWithRole(tokenRequest.user, Number(eventId), Number(electionId), election)
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -72,7 +72,7 @@ export async function handleDeleteElectionById(req: Request, res: Response, next
         const electionId = req.params.electionId
         const tokenRequest = req as TokenRequest
 
-        const data = electionService.deleteWithRole(tokenRequest.user, Number(eventId), Number(electionId))
+        const data = await electionService.deleteWithRole(tokenRequest.user, Number(eventId), Number(electionId))
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -81,7 +81,7 @@ export async function handleDeleteElectionById(req: Request, res: Response, next
 
 export async function handleDeleteAllElections(req: Request, res: Response, next: NextFunction){
     try {
-        const data = electionService.deleteAll()
+        const data = await electionService.deleteAll()
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)

@@ -7,7 +7,7 @@ const candidateService = new CandidateService()
 
 export async function handleGetAllCandidates(req: Request, res: Response, next: NextFunction){
     try {
-        const data = candidateService.get()
+        const data = await candidateService.get()
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -19,7 +19,7 @@ export async function handleGetAllCandidatesFromElection(req: Request, res: Resp
         const electionId = req.params.electionId
         const tokenRequest = req as TokenRequest
 
-        const data = candidateService.getFromElectionWithRole(tokenRequest.user, Number(electionId))
+        const data = await candidateService.getFromElectionWithRole(tokenRequest.user, Number(electionId))
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -31,7 +31,7 @@ export async function handleGetAllCandidatesFromList(req: Request, res: Response
         const listId = req.params.listId
         const tokenRequest = req as TokenRequest
 
-        const data = candidateService.getFromListWithRole(tokenRequest.user, Number(listId))
+        const data = await candidateService.getFromListWithRole(tokenRequest.user, Number(listId))
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -44,7 +44,7 @@ export async function handleAddCandidate(req: Request, res: Response, next: Next
         const candidate = req.body
         const tokenRequest = req as TokenRequest
 
-        const data = candidateService.addWithRole(tokenRequest.user, Number(listId), candidate)
+        const data = await candidateService.addWithRole(tokenRequest.user, Number(listId), candidate)
         res.status(Status.CREATED).send(data)
     } catch (error) {
         next(error)
@@ -57,7 +57,7 @@ export async function handleGetCandidateById(req: Request, res: Response, next: 
         const candidateId = req.params.candidateId
         const tokenRequest = req as TokenRequest
 
-        const data = candidateService.getByIdWithRole(tokenRequest.user, Number(listId), Number(candidateId))
+        const data = await candidateService.getByIdWithRole(tokenRequest.user, Number(listId), Number(candidateId))
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -71,7 +71,7 @@ export async function handleUpdateCandidateById(req: Request, res: Response, nex
         const candidate = req.body
         const tokenRequest = req as TokenRequest
 
-        const data = candidateService.updateWithRole(tokenRequest.user, Number(listId), Number(candidateId), candidate)
+        const data = await candidateService.updateWithRole(tokenRequest.user, Number(listId), Number(candidateId), candidate)
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -84,7 +84,7 @@ export async function handleDeleteCandidateById(req: Request, res: Response, nex
         const candidateId = req.params.candidateId
         const tokenRequest = req as TokenRequest
 
-        const data = candidateService.deleteWithRole(tokenRequest.user, Number(listId), Number(candidateId))
+        const data = await candidateService.deleteWithRole(tokenRequest.user, Number(listId), Number(candidateId))
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
@@ -93,7 +93,7 @@ export async function handleDeleteCandidateById(req: Request, res: Response, nex
 
 export async function handleDeleteAllCandidates(req: Request, res: Response, next: NextFunction){
     try {
-        const data = candidateService.deleteAll()
+        const data = await candidateService.deleteAll()
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
