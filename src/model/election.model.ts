@@ -1,17 +1,30 @@
-import { BelongsTo, Column, Model, CreatedAt, ForeignKey, Table, UpdatedAt, HasMany } from "sequelize-typescript"
+import { BelongsTo, Column, Model, CreatedAt, ForeignKey, Table, UpdatedAt, HasMany, Scopes } from "sequelize-typescript"
 import { Event } from "./event.model"
 import { List } from "./list.model"
 import { Type } from "./type.model"
 
+@Scopes(() => ({
+    event: {
+        attributes: ["id", "name"],
+        include: [
+            {
+                model: Event,
+                attributes: {
+                    exclude: ["id", "startDate", "endDate"],
+                }
+            }
+        ]
+    }
+}))
 @Table
 export class Election extends Model<Election>{
 
     @Column({
         allowNull: false,
         unique: false,
-        validate:{
-            notEmpty:true,
-            len:[3,255]
+        validate: {
+            notEmpty: true,
+            len: [3, 255]
         }
     })
     name!: string
@@ -19,9 +32,9 @@ export class Election extends Model<Election>{
     @Column({
         allowNull: false,
         unique: false,
-        validate:{
-            notEmpty:true,
-            len:[3,255]
+        validate: {
+            notEmpty: true,
+            len: [3, 255]
         }
     })
     information!: string
@@ -29,9 +42,9 @@ export class Election extends Model<Election>{
     @Column({
         allowNull: false,
         unique: false,
-        validate:{
-            notEmpty:true,
-            isInt:true
+        validate: {
+            notEmpty: true,
+            isInt: true
         }
     })
     winners!: number
@@ -61,5 +74,5 @@ export class Election extends Model<Election>{
     type?: Type
 
     @HasMany(() => List)
-    lists? : List[]
+    lists?: List[]
 }
