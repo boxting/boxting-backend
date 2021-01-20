@@ -9,7 +9,7 @@ export class ListValidator {
     public static async checkIfExistsAndStarted(listId: number) {
         try {
             // Find list with specified id
-            const list: List | null = await List.scope('event').findOne({ where: { id: listId } })
+            const list: List | null = await List.scope('election').findOne({ where: { id: listId } })
 
             // Check if an list was found
             if (list == null) {
@@ -32,7 +32,7 @@ export class ListValidator {
     public static async checkIfExists(listId: number) {
         try {
             // Find list with specified id
-            const list: List | null = await List.findOne({ where: { id: listId } })
+            const list: List | null = await List.scope('election').findOne({ where: { id: listId } })
 
             // Check if an list was found
             if (list == null) {
