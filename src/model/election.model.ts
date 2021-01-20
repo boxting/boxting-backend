@@ -10,7 +10,7 @@ import { Type } from "./type.model"
             {
                 model: Event,
                 attributes: {
-                    exclude: ["id", "startDate", "endDate"],
+                    include: ["id", "startDate", "endDate"],
                 }
             }
         ]
