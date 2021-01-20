@@ -1,8 +1,19 @@
-import { BelongsTo, Column, Model, CreatedAt, ForeignKey, Table, UpdatedAt, HasMany } from "sequelize-typescript"
+import { BelongsTo, Column, Model, CreatedAt, ForeignKey, Table, UpdatedAt, HasMany, Scopes } from "sequelize-typescript"
 import { Election } from "./election.model"
 import { Event } from "./event.model"
 import { Candidate } from "./candidate.model"
 
+@Scopes(() => ({
+    election: {
+        attributes: ["id", "electionId"],
+        include: [
+            {
+                model: Election,
+                include: ["id", "eventId"]
+            }
+        ]
+    }
+}))
 @Table
 export class List extends Model<List>{
 
@@ -49,7 +60,7 @@ export class List extends Model<List>{
     electionId!: number
 
     @BelongsTo(() => Election)
-    election?: Event
+    election?: Election
 
     @HasMany(() => Candidate)
     candidates? : Candidate[]
