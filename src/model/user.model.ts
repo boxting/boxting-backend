@@ -27,7 +27,7 @@ import { Voter } from "./voter.model"
             }
         ],
     },
-    login:{
+    login: {
         attributes: ["id", "username", "password", "mail", "roleId"],
         include: [
             {
@@ -48,7 +48,7 @@ import { Voter } from "./voter.model"
             }
         ],
     },
-    update:{
+    update: {
         attributes: ["id", "username", "mail", "roleId"],
         include: [
             {
@@ -72,26 +72,26 @@ export class User extends Model<User>{
     @Column({
         allowNull: false,
         unique: true,
-        validate:{
-            notEmpty:true,
-            len:[3,50]
+        validate: {
+            notEmpty: true,
+            len: [3, 50]
         }
     })
     username!: string
 
     @Column({
         allowNull: false,
-        validate:{
-            notEmpty:true
+        validate: {
+            notEmpty: true
         }
     })
     password!: string
 
     @Column({
         allowNull: false,
-        validate:{
-            notEmpty:true,
-            isEmail:true,
+        validate: {
+            notEmpty: true,
+            isEmail: true,
             len: [5, 50]
         },
         unique: true
@@ -123,12 +123,12 @@ export class User extends Model<User>{
         onDelete: "CASCADE"
     })
     voter?: Voter
-    
+
     @HasOne(() => Organizer, {
         onDelete: "CASCADE"
     })
     organizer?: Organizer
 
     @BelongsToMany(() => Event, () => UserEvent)
-    events? : Event[]
+    events?: Event[]
 }

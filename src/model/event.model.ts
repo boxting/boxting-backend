@@ -5,6 +5,7 @@ import { Role } from "./role.model"
 import { UserEvent } from "./user.event.model"
 import { User } from "./user.model"
 import { Voter } from "./voter.model"
+import { Election } from "./election.model"
 
 @Scopes(() => ({
     full: {
@@ -98,4 +99,7 @@ export class Event extends Model<Event>{
 
     @HasMany(() => AccessCode)
     accessCodes? : AccessCode[]
+
+    @HasMany(() => Election)
+    elections? : Election[]
 }

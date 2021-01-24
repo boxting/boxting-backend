@@ -1,5 +1,4 @@
-import { Table, Model, Column, CreatedAt, UpdatedAt, HasMany, BelongsTo, ForeignKey } from "sequelize-typescript"
-import { Col } from "sequelize/types/lib/utils"
+import { Table, Model, Column, CreatedAt, UpdatedAt, BelongsTo, ForeignKey } from "sequelize-typescript"
 import { Event } from "./event.model"
 
 @Table
