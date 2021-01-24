@@ -57,7 +57,7 @@ export async function handleGetCandidateById(req: Request, res: Response, next: 
         const candidateId = req.params.candidateId
         const tokenRequest = req as TokenRequest
 
-        const data = await candidateService.getByIdWithRole(tokenRequest.user, Number(listId), Number(candidateId))
+        const data = await candidateService.getByIdWithRole(tokenRequest.user, Number(candidateId), Number(listId))
         res.status(Status.OK).send(data)
     } catch (error) {
         next(error)

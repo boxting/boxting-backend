@@ -60,7 +60,7 @@ export class ListService implements ListInterface {
             // Delete specific list by id
             let deleted = await List.destroy({ where: { id: id } })
 
-            return Promise.resolve({ success: true, data: `Object ${(deleted == 0) ? 'not' : ''} deleted` })
+            return Promise.resolve({ success: (deleted != 0), data: `Object${(deleted == 0) ? ' not' : ''} deleted` })
         } catch (error) {
             return Promise.reject(new InternalError(500, error))
         }
@@ -100,7 +100,7 @@ export class ListService implements ListInterface {
             await List.update(newList, { where: { id: id } })
 
             // Remove null data
-            const res = clearData(list)
+            const res = clearData(newList)
 
             return Promise.resolve({ success: true, data: res })
         } catch (error) {
@@ -172,7 +172,7 @@ export class ListService implements ListInterface {
             // If user is not admin, validate ownership
             if (userPayload.role != RoleEnum.ADMIN) {
                 // Validate if user is owner or collaborator of the election
-                await ElectionValidator.checkUserOwnershipOrCollaboration(election.eventId, userPayload.id)
+                await ElectionValidator.checkUserOwnershipOrCollaboration(election.event?.id, userPayload.id)
             }
 
             // Create the list
@@ -227,7 +227,7 @@ export class ListService implements ListInterface {
             // If user is not admin, validate ownership
             if (userPayload.role != RoleEnum.ADMIN) {
                 // Validate if user is owner or collaborator of the election
-                await ElectionValidator.checkUserOwnershipOrCollaboration(election.eventId, userPayload.id)
+                await ElectionValidator.checkUserOwnershipOrCollaboration(election.event?.id, userPayload.id)
             }
 
             // Update the List
@@ -252,7 +252,7 @@ export class ListService implements ListInterface {
             // If user is not admin, validate ownership
             if (userPayload.role != RoleEnum.ADMIN) {
                 // Validate if user is owner of the election
-                await ElectionValidator.checkUserOwnership(election.eventId, userPayload.id)
+                await ElectionValidator.checkUserOwnership(election.event?.id, userPayload.id)
             }
 
             // Delete list

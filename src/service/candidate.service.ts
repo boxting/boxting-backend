@@ -60,7 +60,7 @@ export class CandidateService implements CandidateInterface {
             // Delete specific candidate by id
             let deleted = await Candidate.destroy({ where: { id: id } })
 
-            return Promise.resolve({ success: true, data: `Object ${(deleted == 0) ? 'not' : ''} deleted` })
+            return Promise.resolve({ success: (deleted != 0), data: `Object${(deleted == 0) ? ' not' : ''} deleted` })
         } catch (error) {
             return Promise.reject(new InternalError(500, error))
         }
@@ -101,7 +101,7 @@ export class CandidateService implements CandidateInterface {
             await Candidate.update(newCandidate, { where: { id: id } })
 
             // Remove null data
-            const res = clearData(candidate)
+            const res = clearData(newCandidate)
 
             return Promise.resolve({ success: true, data: res })
         } catch (error) {

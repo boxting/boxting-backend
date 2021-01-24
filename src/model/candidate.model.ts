@@ -44,6 +44,16 @@ export class Candidate extends Model<Candidate>{
 
     @Column({
         allowNull: true,
+        unique: false,
+        validate:{
+            notEmpty:true,
+            len:[3,255]
+        }
+    })
+    imageUrl!: string
+
+    @Column({
+        allowNull: true,
         defaultValue: true
     })
     isActive!: boolean

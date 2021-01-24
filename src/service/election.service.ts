@@ -62,7 +62,7 @@ export class ElectionService implements ElectionInterface {
             // Delete specific election by id
             let deleted = await Election.destroy({ where: { id: id } })
 
-            return Promise.resolve({ success: true, data: `Object ${(deleted == 0) ? 'not' : ''} deleted` })
+            return Promise.resolve({ success: (deleted != 0), data: `Object${(deleted == 0) ? ' not' : ''} deleted` })
         } catch (error) {
             return Promise.reject(new InternalError(500, error))
         }
@@ -102,7 +102,7 @@ export class ElectionService implements ElectionInterface {
             await Election.update(newElection, { where: { id: id } })
 
             // Remove null data
-            const res = clearData(election)
+            const res = clearData(newElection)
 
             return Promise.resolve({ success: true, data: res })
         } catch (error) {

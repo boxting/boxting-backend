@@ -9,7 +9,9 @@ import { Candidate } from "./candidate.model"
         include: [
             {
                 model: Election,
-                include: ["id", "eventId"]
+                attributes: {
+                    include: ["id", "eventId"]
+                }
             }
         ]
     }
