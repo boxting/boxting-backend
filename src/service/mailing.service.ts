@@ -29,7 +29,7 @@ export class MailingService {
         }
     }
 
-    async sendRecoverPasswordMail(userMail: string, newPassword: string, username: string) {
+    async sendRecoverPasswordMail(userMail: string, newToken: string, username: string) {
 
         try {
             //Read and set html to send
@@ -43,7 +43,7 @@ export class MailingService {
             
             let replacements = {
                 username: username,
-                newPassword: newPassword
+                newToken: newToken
             };
 
             let htmlToSend = template(replacements);

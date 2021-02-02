@@ -24,8 +24,7 @@ import axios from "axios"
 import crypto from "crypto"
 // certificates
 import https from 'https'
-import fs from 'fs'
-import path from 'path'
+import { PasswordToken } from "../model/password.token.model";
 
 export class LoginService implements LoginInterface {
 
@@ -212,22 +211,35 @@ export class LoginService implements LoginInterface {
                 return Promise.reject(new NotFoundError(1004, 'The mail inserted is not registered'))
             }
 
-            // Generate new random password
-            var newPassword = crypto.randomBytes(10).toString('hex')
+            // Check if previus password token exists
+            const passwordToken = await PasswordToken.findOne({ where: { userId: user.id } })
 
+            // If token found delete to create a new one
+            if(passwordToken != null){
+                await passwordToken.destroy()
+                await passwordToken.save()
+            }
+
+            // Generate new random password
+            var newToken = crypto.randomBytes(10).toString('hex')
+
+            // Create new password token
+            const tokenOptions = {
+                token: await bcrypt.hash(newToken, 10),
+                userId: user.id
+            }
+
+            await PasswordToken.create(tokenOptions)
+            
             // Get user name for email
             let firstName = user.voter?.firstName.split(' ')[0]
             let firstLastName = user.voter?.lastName.split(' ')[0]
             let name = firstName + ' ' + firstLastName
 
             // Send mail using mailing service
-            await this.mailingService.sendRecoverPasswordMail(userMail, newPassword, name)
+            await this.mailingService.sendRecoverPasswordMail(userMail, newToken, name)
 
-            // Update password on database
-            user.password = await bcrypt.hash(newPassword, 10)
-            await user.save()
-            
-            return Promise.resolve({ success: true, data: 'New temporal password sent to mail' })
+            return Promise.resolve({ success: true, data: 'Password token sent to mail' })
         } catch (error) {
             console.log(error)
             return Promise.reject(new InternalError(500, error))
