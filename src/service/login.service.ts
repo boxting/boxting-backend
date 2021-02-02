@@ -22,6 +22,10 @@ import { ValidationError, UniqueConstraintError } from "sequelize";
 import bcrypt from "bcrypt"
 import axios from "axios"
 import crypto from "crypto"
+// certificates
+import https from 'https'
+import fs from 'fs'
+import path from 'path'
 
 export class LoginService implements LoginInterface {
 
@@ -146,6 +150,8 @@ export class LoginService implements LoginInterface {
     async getDniInformation(dni: string) {
 
         try {
+            const httpsAgent = new https.Agent({ rejectUnauthorized: false });
+
             let BASE = "https://api.reniec.cloud/dni/"
 
             if (dni.trim().length == 0 || dni.trim().length < 8) {
@@ -154,7 +160,7 @@ export class LoginService implements LoginInterface {
 
             let URL = BASE + dni
 
-            let res = await axios.get(URL)
+            let res = await axios.get(URL, { httpsAgent })
 
             if (res.data == null) {
                 return Promise.reject(new BadRequestError(2009, "No matching ID information was found"))
