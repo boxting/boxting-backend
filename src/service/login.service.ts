@@ -217,7 +217,6 @@ export class LoginService implements LoginInterface {
             // If token found delete to create a new one
             if (passwordToken != null) {
                 await passwordToken.destroy()
-                await passwordToken.save()
             }
 
             // Generate new random password
