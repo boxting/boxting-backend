@@ -84,3 +84,13 @@ export async function handleForgotPassword(req: Request, res: Response, next: Ne
         next(error)
     }
 }
+
+export async function handleValidatePasswordToken(req: Request, res: Response, next: NextFunction) {
+    try {
+        const { mail, token } = req.body
+        const data = await loginService.validatePasswordToken(mail, token)
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
