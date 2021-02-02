@@ -94,3 +94,14 @@ export async function handleValidatePasswordToken(req: Request, res: Response, n
         next(error)
     }
 }
+
+export async function handleSetNewPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+        const { mail, token, newPassword } = req.body
+
+        const data = await loginService.setNewPassword(mail, token, newPassword)
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}

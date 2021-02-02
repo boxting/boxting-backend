@@ -8,7 +8,8 @@ import {
     handleLoginAdmin,
     handleGetDniInformation,
     handleForgotPassword,
-    handleValidatePasswordToken
+    handleValidatePasswordToken,
+    handleSetNewPassword
 } from "../../controller/login.controller";
 
 const router = Router()
@@ -29,5 +30,6 @@ router.get('/dni/:dni', handleGetDniInformation)
 // Recover Password
 router.post('/forgot/password', handleForgotPassword)
 router.post('/validate/password-token', handleValidatePasswordToken)
+router.post('/set/password', handleSetNewPassword)
 
 export { router as loginApi }
