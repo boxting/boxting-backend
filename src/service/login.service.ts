@@ -215,7 +215,7 @@ export class LoginService implements LoginInterface {
             const passwordToken = await PasswordToken.findOne({ where: { userId: user.id } })
 
             // If token found delete to create a new one
-            if(passwordToken != null){
+            if (passwordToken != null) {
                 await passwordToken.destroy()
                 await passwordToken.save()
             }
@@ -230,7 +230,7 @@ export class LoginService implements LoginInterface {
             }
 
             await PasswordToken.create(tokenOptions)
-            
+
             // Get user name for email
             let firstName = user.voter?.firstName.split(' ')[0]
             let firstLastName = user.voter?.lastName.split(' ')[0]
@@ -241,7 +241,6 @@ export class LoginService implements LoginInterface {
 
             return Promise.resolve({ success: true, data: 'Password token sent to mail' })
         } catch (error) {
-            console.log(error)
             return Promise.reject(new InternalError(500, error))
         }
     }
@@ -259,20 +258,49 @@ export class LoginService implements LoginInterface {
             const passwordToken = await PasswordToken.findOne({ where: { userId: user.id } })
 
             // Validate if token is exists and is correct
-            if(passwordToken == null || !await bcrypt.compare(token, passwordToken.token)){
+            if (passwordToken == null || !await bcrypt.compare(token, passwordToken.token)) {
                 return Promise.reject(new NotFoundError(1006, 'The token inserted is incorrect.'))
             }
 
             // Validate if token is still valid
-            const datePlus30 = new Date(passwordToken.createdAt.getTime() + 30*60000)
+            const datePlus30 = new Date(passwordToken.createdAt.getTime() + 30 * 60000)
 
-            if(Date.now() >= datePlus30.getTime()){
+            if (Date.now() >= datePlus30.getTime()) {
                 return Promise.reject(new BadRequestError(1007, 'The token inserted has expired.'))
             }
 
             return Promise.resolve({ success: true, data: 'Token is valid' })
         } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async setNewPassword(userMail: string, token: string, newPassword: string): Promise<Result> {
+        try {
+
+            // Check if token is valid
+            await this.validatePasswordToken(userMail, token)
+
+            // Find user and token with specified id
+            const user = await User.scope('login').findOne({ where: { mail: userMail } })
+            const passwordToken = await PasswordToken.findOne({ where: { userId: user!.id } })
+
+            // After token validation we are sure that user and token exists
+            
+            // Update user password
+            user!.password = await bcrypt.hash(newPassword, 10)
+            await user!.save()
+
+            // Delete password token
+            await passwordToken!.destroy()
+
+            return Promise.resolve({ success: true, data: "New password set!" })
+        } catch (error) {
             console.log(error)
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
             return Promise.reject(new InternalError(500, error))
         }
     }

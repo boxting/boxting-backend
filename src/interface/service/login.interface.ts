@@ -7,4 +7,5 @@ export interface LoginInterface {
     login(username: string, password: string, role: number): Promise<Result>
     forgotPassword(userMail: string): Promise<Result>
     validatePasswordToken(userMail: string, passwordToken: string): Promise<Result>
+    setNewPassword(userMail: string, token: string, newPassword: string): Promise<Result>
 }
