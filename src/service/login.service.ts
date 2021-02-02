@@ -24,8 +24,7 @@ import axios from "axios"
 import crypto from "crypto"
 // certificates
 import https from 'https'
-import fs from 'fs'
-import path from 'path'
+import { PasswordToken } from "../model/password.token.model";
 
 export class LoginService implements LoginInterface {
 
@@ -212,8 +211,24 @@ export class LoginService implements LoginInterface {
                 return Promise.reject(new NotFoundError(1004, 'The mail inserted is not registered'))
             }
 
+            // Check if previus password token exists
+            const passwordToken = await PasswordToken.findOne({ where: { userId: user.id } })
+
+            // If token found delete to create a new one
+            if (passwordToken != null) {
+                await passwordToken.destroy()
+            }
+
             // Generate new random password
-            var newPassword = crypto.randomBytes(10).toString('hex')
+            var newToken = crypto.randomBytes(10).toString('hex')
+
+            // Create new password token
+            const tokenOptions = {
+                token: await bcrypt.hash(newToken, 10),
+                userId: user.id
+            }
+
+            await PasswordToken.create(tokenOptions)
 
             // Get user name for email
             let firstName = user.voter?.firstName.split(' ')[0]
@@ -221,15 +236,70 @@ export class LoginService implements LoginInterface {
             let name = firstName + ' ' + firstLastName
 
             // Send mail using mailing service
-            await this.mailingService.sendRecoverPasswordMail(userMail, newPassword, name)
+            await this.mailingService.sendRecoverPasswordMail(userMail, newToken, name)
 
-            // Update password on database
-            user.password = await bcrypt.hash(newPassword, 10)
-            await user.save()
+            return Promise.resolve({ success: true, data: 'Password token sent to mail' })
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async validatePasswordToken(userMail: string, token: string): Promise<Result> {
+        try {
+            // Find user with provided mail
+            const user = await User.scope('login').findOne({ where: { mail: userMail } })
+
+            if (user == null) {
+                return Promise.reject(new BadRequestError(1005, 'The mail inserted is invalid or is not registered.'))
+            }
+
+            // Check if previus password token exists
+            const passwordToken = await PasswordToken.findOne({ where: { userId: user.id } })
+
+            // Validate if token is exists and is correct
+            if (passwordToken == null || !await bcrypt.compare(token, passwordToken.token)) {
+                return Promise.reject(new NotFoundError(1006, 'The token inserted is incorrect.'))
+            }
+
+            // Validate if token is still valid
+            const datePlus30 = new Date(passwordToken.createdAt.getTime() + 30 * 60000)
+
+            if (Date.now() >= datePlus30.getTime()) {
+                return Promise.reject(new BadRequestError(1007, 'The token inserted has expired.'))
+            }
+
+            return Promise.resolve({ success: true, data: 'Token is valid' })
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async setNewPassword(userMail: string, token: string, newPassword: string): Promise<Result> {
+        try {
+
+            // Check if token is valid
+            await this.validatePasswordToken(userMail, token)
+
+            // Find user and token with specified id
+            const user = await User.scope('login').findOne({ where: { mail: userMail } })
+            const passwordToken = await PasswordToken.findOne({ where: { userId: user!.id } })
+
+            // After token validation we are sure that user and token exists
             
-            return Promise.resolve({ success: true, data: 'New temporal password sent to mail' })
+            // Update user password
+            user!.password = await bcrypt.hash(newPassword, 10)
+            await user!.save()
+
+            // Delete password token
+            await passwordToken!.destroy()
+
+            return Promise.resolve({ success: true, data: "New password set!" })
         } catch (error) {
             console.log(error)
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
             return Promise.reject(new InternalError(500, error))
         }
     }
