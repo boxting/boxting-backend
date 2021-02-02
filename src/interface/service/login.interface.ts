@@ -6,4 +6,5 @@ export interface LoginInterface {
     registerOrganizer(user: User, isCollaborator: boolean): Promise<Result>
     login(username: string, password: string, role: number): Promise<Result>
     forgotPassword(userMail: string): Promise<Result>
+    validatePasswordToken(userMail: string, passwordToken: string): Promise<Result>
 }

@@ -245,4 +245,35 @@ export class LoginService implements LoginInterface {
             return Promise.reject(new InternalError(500, error))
         }
     }
+
+    async validatePasswordToken(userMail: string, token: string): Promise<Result> {
+        try {
+            // Find user with provided mail
+            const user = await User.scope('login').findOne({ where: { mail: userMail } })
+
+            if (user == null) {
+                return Promise.reject(new BadRequestError(1005, 'The mail inserted is invalid or is not registered.'))
+            }
+
+            // Check if previus password token exists
+            const passwordToken = await PasswordToken.findOne({ where: { userId: user.id } })
+
+            // Validate if token is exists and is correct
+            if(passwordToken == null || !await bcrypt.compare(token, passwordToken.token)){
+                return Promise.reject(new NotFoundError(1006, 'The token inserted is incorrect.'))
+            }
+
+            // Validate if token is still valid
+            const datePlus30 = new Date(passwordToken.createdAt.getTime() + 30*60000)
+
+            if(Date.now() >= datePlus30.getTime()){
+                return Promise.reject(new BadRequestError(1007, 'The token inserted has expired.'))
+            }
+
+            return Promise.resolve({ success: true, data: 'Token is valid' })
+        } catch (error) {
+            console.log(error)
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
 }
