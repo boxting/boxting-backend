@@ -13,6 +13,7 @@ import { Type } from "../model/type.model";
 import { List } from "../model/list.model";
 import { Candidate } from "../model/candidate.model";
 import { PasswordToken } from "../model/password.token.model";
+import { RefreshToken } from "../model/refresh.token.model";
 
 export class MySequelize {
 
@@ -36,8 +37,8 @@ export class MySequelize {
                 },
             })
             this.conn.addModels([
-                Role, User, Voter, Organizer, Event, UserEvent, 
-                AccessCode, Election, Type, List, Candidate, PasswordToken
+                Role, User, Voter, Organizer, Event, UserEvent, AccessCode,
+                Election, Type, List, Candidate, PasswordToken, RefreshToken
             ])
 
             if (process.env.RUN_CREATION && process.env.RUN_CREATION == "true") {
