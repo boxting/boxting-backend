@@ -11,7 +11,8 @@ import {
     handleValidatePasswordToken,
     handleSetNewPassword,
     handleValidateNotUsedDni,
-    handleRefreshToken
+    handleRefreshToken,
+    handleCloseSession
 } from "../../controller/login.controller";
 
 const router = Router()
@@ -25,6 +26,9 @@ router.post('/register/organizer', handleRegisterOrganizers)
 router.post('/voter', handleLoginVoter)
 router.post('/organizer', handleLoginOrganizer)
 router.post('/admin', handleLoginAdmin)
+
+// Close session
+router.delete('/close/:refreshToken', handleCloseSession)
 
 // Token
 router.post('/token/refresh', handleRefreshToken)
