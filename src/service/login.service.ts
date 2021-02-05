@@ -248,6 +248,11 @@ export class LoginService implements LoginInterface {
 
             return Promise.resolve({ success: true, data: refreshed })
         } catch (error) {
+            console.log(error)
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
             return Promise.reject(new InternalError(500, error))
         }
     }
@@ -345,7 +350,7 @@ export class LoginService implements LoginInterface {
 
             return Promise.resolve({ success: true, data: "New password set!" })
         } catch (error) {
-            console.log(error)
+
             if (error.errorCode != undefined) {
                 return Promise.reject(error)
             }
