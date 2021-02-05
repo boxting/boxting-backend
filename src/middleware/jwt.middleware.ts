@@ -2,28 +2,38 @@ import * as jwt from 'jsonwebtoken'
 import { config } from 'dotenv'
 import { Response, NextFunction } from 'express'
 import { Payload } from '../interface/request.interface'
+import { TokenManager } from '../utils/token.manager'
 
-config()
+const tokenManager = TokenManager.getInstance()
 
 export async function authenticateToken(req: any, res: Response, next: NextFunction) {
 
+    // Get current value from authorization header
     const authHeader = req.headers['authorization']
-    const token = authHeader && authHeader?.split(' ')[1]
 
-    if(token == null) return res.status(401).send('No token found in authorization header, no authorized')
+    // Validate that auth header has a value
+    if (authHeader == undefined) {
+        return res.status(401).send('No token found in authorization header, no authorized')
+    }
 
-    if (process.env.ACCESS_TOKEN_SECRET != undefined){
-        try {
-            jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
-            
-            const decoded = jwt.decode(token, {complete:true}) as {[key:string]:any}
-            req.user = decoded.payload as Payload
-            next()
-            
-        } catch (error) {
-            console.log(error)
-            return res.status(401).send('Invalid token in authorization header')
-        }
-        
+    // Split the auth header to verify both parts
+    const authSplit = authHeader.split(' ')
+
+    // Check if the first part is te Bearer validator
+    if (authSplit[0] != 'Bearer') {
+        return res.status(401).send('Invalid token in authorization header')
+    }
+
+    // Assign second part to token variable
+    const token = authSplit[1]
+
+    try {
+        // If token is valid, assign payload to request user
+        req.user = await tokenManager.verifyToken(token)
+        // Continue with request
+        next()
+    } catch (error) {
+        // Token is not valid
+        return res.status(401).send('Invalid token in authorization header')
     }
 }
