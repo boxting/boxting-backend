@@ -226,6 +226,16 @@ export class LoginService implements LoginInterface {
         }
     }
 
+    async closeSession(refreshToken: string): Promise<Result> {
+        try {
+            await RefreshToken.destroy({ where: { refreshToken: refreshToken } })
+            
+            return Promise.resolve({ success: true, data: 'Session closed!' })
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
     async refreshToken(userTokens: UserTokens): Promise<Result> {
         try {
 

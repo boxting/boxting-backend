@@ -8,6 +8,7 @@ export interface LoginInterface {
     validateNotUsedDni(dni: string): Promise<Result>
     getDniInformation(dni: string): Promise<Result>
     login(username: string, password: string, role: number): Promise<Result>
+    closeSession(refreshToken: string): Promise<Result>
     refreshToken(userTokens: UserTokens): Promise<Result>
     forgotPassword(userMail: string): Promise<Result>
     validatePasswordToken(userMail: string, passwordToken: string): Promise<Result>
