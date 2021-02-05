@@ -39,7 +39,7 @@ export async function handleLoginAdmin(req: Request, res: Response, next: NextFu
     try {
         const { username, password } = req.body
         const data = await loginService.login(username, password, RoleEnum.ADMIN)
-        res.status(Status.CREATED).send(data)
+        res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
     }
@@ -49,7 +49,7 @@ export async function handleLoginVoter(req: Request, res: Response, next: NextFu
     try {
         const { username, password } = req.body
         const data = await loginService.login(username, password, RoleEnum.VOTER)
-        res.status(Status.CREATED).send(data)
+        res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
     }
@@ -59,7 +59,17 @@ export async function handleLoginOrganizer(req: Request, res: Response, next: Ne
     try {
         const { username, password } = req.body
         const data = await loginService.login(username, password, RoleEnum.ORGANIZER)
-        res.status(Status.CREATED).send(data)
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleRefreshToken(req: Request, res: Response, next: NextFunction) {
+    try {
+        const { token, refreshToken } = req.body
+        const data = await loginService.refreshToken({ token: token, refreshToken: refreshToken })
+        res.status(Status.OK).send(data)
     } catch (error) {
         next(error)
     }
