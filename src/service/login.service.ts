@@ -146,7 +146,23 @@ export class LoginService implements LoginInterface {
         }
     }
 
-    async getDniInformation(dni: string) {
+    async validateNotUsedDni(dni: string): Promise<Result> {
+
+        try {
+            const voter = await Voter.findOne({ where: { dni: dni } })
+
+            if (voter != null) {
+                return Promise.resolve({ success: false, data: 'DNI has an account associated.' })
+            }
+
+            return Promise.resolve({ success: true, data: 'DNI has no account associated.' })
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+
+    }
+
+    async getDniInformation(dni: string): Promise<Result> {
 
         try {
             const httpsAgent = new https.Agent({ rejectUnauthorized: false });
@@ -285,7 +301,7 @@ export class LoginService implements LoginInterface {
             const passwordToken = await PasswordToken.findOne({ where: { userId: user!.id } })
 
             // After token validation we are sure that user and token exists
-            
+
             // Update user password
             user!.password = await bcrypt.hash(newPassword, 10)
             await user!.save()
