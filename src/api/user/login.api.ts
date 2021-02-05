@@ -9,7 +9,8 @@ import {
     handleGetDniInformation,
     handleForgotPassword,
     handleValidatePasswordToken,
-    handleSetNewPassword
+    handleSetNewPassword,
+    handleValidateNotUsedDni
 } from "../../controller/login.controller";
 
 const router = Router()
@@ -25,6 +26,7 @@ router.post('/organizer', handleLoginOrganizer)
 router.post('/admin', handleLoginAdmin)
 
 // Identity Validation
+router.get('/used/dni/:dni', handleValidateNotUsedDni)
 router.get('/dni/:dni', handleGetDniInformation)
 
 // Recover Password
