@@ -98,10 +98,15 @@ export class TokenManager {
                 console.log('ACCESS_TOKEN_SECRET or REFRESH_TOKEN_SECRET has not been set correctly.')
                 return Promise.reject('Something went wrong.')
             }
-
+            // Create new payload to get new token
+            const newPayload: Payload = {
+                id: payload.id,
+                role: payload.role,
+                username: payload.username
+            }
             // Create new token
-            const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15h' })
-
+            const token = jwt.sign(newPayload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15h' })
+            console.log(token)
             return Promise.resolve(token)
         } catch (error) {
             return Promise.reject(new BadRequestError(1009, 'The refresh token is invalid.'))
