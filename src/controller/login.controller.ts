@@ -65,6 +65,17 @@ export async function handleLoginOrganizer(req: Request, res: Response, next: Ne
     }
 }
 
+export async function handleCloseSession(req: Request, res: Response, next: NextFunction) {
+    try {
+        const refreshToken = req.params.refreshToken
+
+        const data = await loginService.closeSession(refreshToken)
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export async function handleRefreshToken(req: Request, res: Response, next: NextFunction) {
     try {
         const { token, refreshToken } = req.body
