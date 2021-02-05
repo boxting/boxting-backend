@@ -65,6 +65,16 @@ export async function handleLoginOrganizer(req: Request, res: Response, next: Ne
     }
 }
 
+export async function handleValidateNotUsedDni(req: Request, res: Response, next: NextFunction) {
+    try {
+        let dni = req.params.dni
+        const data = await loginService.validateNotUsedDni(dni)
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export async function handleGetDniInformation(req: Request, res: Response, next: NextFunction) {
     try {
         let dni = req.params.dni
