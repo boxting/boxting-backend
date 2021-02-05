@@ -1,6 +1,7 @@
 // Interfaces
 import { LoginInterface } from "../interface/service/login.interface"
 import { Result } from "../interface/result.interface";
+import { UserTokens } from "../interface/token.interface";
 // Errors
 import { InternalError } from "../error/base.error"
 import { BadRequestError } from "../error/bad.request.error";
@@ -10,10 +11,12 @@ import { NotFoundError } from "../error/not.found.error";
 import { Voter } from "../model/voter.model";
 import { Organizer } from "../model/organizer.model";
 import { User } from "../model/user.model";
+import { PasswordToken } from "../model/password.token.model";
+import { RefreshToken } from "../model/refresh.token.model";
 // Utils
 import { RoleEnum } from "../utils/role.enum";
 import { clearData } from "../utils/clear.response";
-import { createToken } from "../utils/create.token";
+import { TokenManager } from "../utils/token.manager";
 // Service
 import { UserService } from "./user.service";
 import { MailingService } from "./mailing.service";
@@ -22,18 +25,19 @@ import { ValidationError, UniqueConstraintError } from "sequelize";
 import bcrypt from "bcrypt"
 import axios from "axios"
 import crypto from "crypto"
-// certificates
 import https from 'https'
-import { PasswordToken } from "../model/password.token.model";
+import { promises } from "fs";
 
 export class LoginService implements LoginInterface {
 
     private userService: UserService
     private mailingService: MailingService
+    private tokenManager: TokenManager
 
     constructor() {
         this.userService = new UserService()
         this.mailingService = MailingService.getConnection()
+        this.tokenManager = TokenManager.getInstance()
     }
 
     async registerVoter(user: User): Promise<Result> {
@@ -205,14 +209,44 @@ export class LoginService implements LoginInterface {
                 return Promise.reject(new BadRequestError(1002, "The password inserted is incorrect"))
             }
 
-            //get authentication token
-            const token = createToken(user)
+            // Get authentication tokens
+            const userTokens = await this.tokenManager.createTokens(user)
 
-            //remove null data
+            // Store created tokens on table to handle refresh
+            await RefreshToken.create({ token: userTokens.token, refreshToken: userTokens.refreshToken })
+
+            // Remove null data
             const res = clearData(user)
-            res['token'] = token
+            res['token'] = userTokens.token
+            res['refreshToken'] = userTokens.refreshToken
 
             return Promise.resolve({ success: true, data: res })
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async refreshToken(userTokens: UserTokens): Promise<Result> {
+        try {
+
+            // Validate if inserted tokens exists on db
+            const tokens = await RefreshToken.findOne({ where: { token: userTokens.token, refreshToken: userTokens.refreshToken } })
+
+            if (tokens == null) {
+                return Promise.reject(new BadRequestError(1008, 'Inserted user tokens are invalid.'))
+            }
+
+            // If tokens found on db, refresh token with manager to get a new access token
+            const refreshed = await this.tokenManager.refreshToken(userTokens.refreshToken)
+
+            // Update access token on database
+            tokens.token = refreshed
+            await tokens.save()
+
+            // Replace old access token
+            userTokens.token = refreshed
+
+            return Promise.resolve({ success: true, data: refreshed })
         } catch (error) {
             return Promise.reject(new InternalError(500, error))
         }
