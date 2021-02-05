@@ -10,7 +10,8 @@ import {
     handleForgotPassword,
     handleValidatePasswordToken,
     handleSetNewPassword,
-    handleValidateNotUsedDni
+    handleValidateNotUsedDni,
+    handleRefreshToken
 } from "../../controller/login.controller";
 
 const router = Router()
@@ -24,6 +25,9 @@ router.post('/register/organizer', handleRegisterOrganizers)
 router.post('/voter', handleLoginVoter)
 router.post('/organizer', handleLoginOrganizer)
 router.post('/admin', handleLoginAdmin)
+
+// Token
+router.post('/token/refresh', handleRefreshToken)
 
 // Identity Validation
 router.get('/used/dni/:dni', handleValidateNotUsedDni)
