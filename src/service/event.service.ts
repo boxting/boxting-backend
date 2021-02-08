@@ -11,6 +11,7 @@ import { User } from "../model/user.model";
 // Interface
 import { EventInterface } from "../interface/service/event.interface"
 import { Result } from "../interface/result.interface";
+import { Payload } from "../interface/request.interface";
 // Utils
 import { clearData } from "../utils/clear.response";
 import { RoleEnum } from "../utils/role.enum";
@@ -18,6 +19,9 @@ import { RoleEnum } from "../utils/role.enum";
 import { LoginService } from "./login.service";
 // Packages
 import { ValidationError } from "sequelize";
+// Validators
+import { EventValidator } from "./validators/event.validator"
+import { UserValidator } from "./validators/user.validator"
 
 export class EventService implements EventInterface {
 
@@ -95,7 +99,7 @@ export class EventService implements EventInterface {
 
     async createEvent(object: Event, userId: number): Promise<Result> {
         try {
-            
+
             // Generate random unique event code
             object.code = Math.random().toString(36).substr(2, 10)
 
@@ -151,7 +155,7 @@ export class EventService implements EventInterface {
             // Validate if an event was found
             if (event == null) {
                 return Promise.reject(new NotFoundError(4001, "There is no event with the inserted id."))
-            } 
+            }
 
             // Validate dates
             if (event.startDate.getTime() <= Date.now() && event.endDate.getTime() > Date.now()) {
@@ -206,7 +210,7 @@ export class EventService implements EventInterface {
             // Make inmutable values be equal to orginial values
             newEvent.id = event.id
             newEvent.code = event.code
-            
+
             // Update event
             let changes = await Event.update(newEvent, { where: { id: id } })
 
@@ -289,25 +293,16 @@ export class EventService implements EventInterface {
         }
     }
 
-    async registerCollaborator(object: User, eventId: number, role: number, userId: number): Promise<Result> {
+    async registerCollaborator(object: User, eventId: number, userPayload: Payload): Promise<Result> {
         try {
 
-            // Find the event with the specified id
-            let event = await Event.findByPk(eventId)
+            // Check if event exists
+            await EventValidator.checkIfExists(eventId)
 
-            // Check if event was found
-            if (event == null) {
-                return Promise.reject(new NotFoundError(4007, "There is no event with the inserted code."))
-            }
-
-            // If user is not an admin, we need to validate ownership
-            if (role == RoleEnum.ORGANIZER) {
-
-                const relation: UserEvent | null = await UserEvent.findOne({ where: { userId: userId, eventId: eventId } })
-
-                if (relation == null || !relation.isOwner) {
-                    return Promise.reject(new NotPermittedError(4003, "You can't modify a event that is not yours."))
-                }
+            // If user is not admin, validate ownership
+            if (userPayload.role != RoleEnum.ADMIN) {
+                // Validate if user is owner or collaborator of the event
+                await EventValidator.checkUserOwnershipOrCollaboration(eventId, userPayload.id)
             }
 
             // Register the collaborator as a user
@@ -320,15 +315,45 @@ export class EventService implements EventInterface {
             return Promise.resolve({ success: true, data: res })
         } catch (error) {
 
-            let errorRes: Error
-
-            if (error instanceof InternalError || error instanceof BadRequestError) {
-                errorRes = error
-            } else {
-                errorRes = new InternalError(500, error)
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
             }
 
-            return Promise.reject(errorRes)
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async registerCollaboratorByUsername(username: string, eventId: number, userPayload: Payload): Promise<Result> {
+        try {
+
+            // Check if event exists
+            await EventValidator.checkIfExists(eventId)
+
+            // If user is not admin, validate ownership
+            if (userPayload.role != RoleEnum.ADMIN) {
+                // Validate if user is owner or collaborator of the event
+                await EventValidator.checkUserOwnershipOrCollaboration(eventId, userPayload.id)
+            }
+
+            // Check if a collaborator with the specified username exists
+            const collaborator = await UserValidator.checkIfExistsByUsername(username)
+
+            // Check if obtained user is collaborator
+            if( collaborator.roleId != RoleEnum.COLLABORATOR){
+                return Promise.reject(new BadRequestError(4013, 'The inserted username is not a collaborator.'))
+            }
+
+            // Create collaborator event relation
+            let res = await UserEvent.create({ userId: collaborator.id, eventId: eventId, isCollaborator: true })
+
+            return Promise.resolve({ success: true, data: res })
+        } catch (error) {
+
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
         }
     }
 
