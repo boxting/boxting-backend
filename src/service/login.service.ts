@@ -21,21 +21,19 @@ import { TokenManager } from "../utils/token.manager";
 import { UserService } from "./user.service";
 import { MailingService } from "./mailing.service";
 // Package Imports
-import { ValidationError, UniqueConstraintError } from "sequelize";
+import { ValidationError } from "sequelize";
 import bcrypt from "bcrypt"
 import axios from "axios"
 import crypto from "crypto"
 import https from 'https'
-import { promises } from "fs";
+import { UserValidator } from "./validators/user.validator";
 
 export class LoginService implements LoginInterface {
 
-    private userService: UserService
     private mailingService: MailingService
     private tokenManager: TokenManager
 
     constructor() {
-        this.userService = new UserService()
         this.mailingService = MailingService.getConnection()
         this.tokenManager = TokenManager.getInstance()
     }
@@ -56,16 +54,19 @@ export class LoginService implements LoginInterface {
             // Encrypt password to protect data
             user.password = await bcrypt.hash(user.password, 10)
 
+            // Check if necessary fields are included 
+            if (user.mail == null || user.voter.dni == null || user.username == null) {
+                return Promise.reject(new BadRequestError(2003, 'Some necessary fields are missing.'))
+            }
+
+            // Validate unique data
+            await UserValidator.checkIfDNIIsRegistered(user.voter.dni)
+            await UserValidator.checkIfMailIsRegistered(user.mail)
+            await UserValidator.checkIfUsernameIsRegistered(user.username)
+
             // Check if voter is valid before creating user
             let newVoter: Voter = new Voter(user.voter)
             await newVoter.validate()
-
-            // Check if exists a voter with provided mail or dni
-            let existingVoter = await this.userService.getUserByDni(user.voter.dni)
-
-            if (existingVoter != null) {
-                return Promise.reject(new BadRequestError(2006, "Dni is already registered"))
-            }
 
             // Assign voter role
             user.roleId = RoleEnum.VOTER
@@ -84,18 +85,15 @@ export class LoginService implements LoginInterface {
 
         } catch (error) {
 
-            let errorRes: Error
-
-            if (error instanceof UniqueConstraintError) {
-                errorRes = new BadRequestError(2001, "Username is already registered")
-            } else if (error instanceof ValidationError) {
+            if (error instanceof ValidationError) {
                 let msg = error.errors[0].message
-                errorRes = new BadRequestError(2003, msg)
-            } else {
-                errorRes = new InternalError(500, error)
+                return Promise.reject(new BadRequestError(2003, msg))
             }
 
-            return Promise.reject(errorRes)
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+            return Promise.reject(new InternalError(error))
         }
     }
 
@@ -114,6 +112,15 @@ export class LoginService implements LoginInterface {
 
             // Encrypt password to protect data
             user.password = await bcrypt.hash(user.password, 10)
+
+            // Check if necessary fields are included 
+            if (user.mail == null || user.username == null) {
+                return Promise.reject(new BadRequestError(2003, 'Some necessary fields are missing.'))
+            }
+
+            // Validate unique data
+            await UserValidator.checkIfMailIsRegistered(user.mail)
+            await UserValidator.checkIfUsernameIsRegistered(user.username)
 
             //Check if organizer is valid before creating user
             let newOrganizer: Organizer = new Organizer(user.organizer)
@@ -135,18 +142,15 @@ export class LoginService implements LoginInterface {
 
         } catch (error) {
 
-            let errorRes: Error
-
-            if (error instanceof UniqueConstraintError) {
-                errorRes = new BadRequestError(2001, "Username is already registered")
-            } else if (error instanceof ValidationError) {
+            if (error instanceof ValidationError) {
                 let msg = error.errors[0].message
-                errorRes = new BadRequestError(2003, msg)
-            } else {
-                errorRes = new InternalError(500, error)
+                return Promise.reject(new BadRequestError(2003, msg))
             }
 
-            return Promise.reject(errorRes)
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+            return Promise.reject(new InternalError(error))
         }
     }
 
@@ -229,7 +233,7 @@ export class LoginService implements LoginInterface {
     async closeSession(refreshToken: string): Promise<Result> {
         try {
             await RefreshToken.destroy({ where: { refreshToken: refreshToken } })
-            
+
             return Promise.resolve({ success: true, data: 'Session closed!' })
         } catch (error) {
             return Promise.reject(new InternalError(500, error))
@@ -258,7 +262,7 @@ export class LoginService implements LoginInterface {
 
             return Promise.resolve({ success: true, data: refreshed })
         } catch (error) {
-            console.log(error)
+
             if (error.errorCode != undefined) {
                 return Promise.reject(error)
             }

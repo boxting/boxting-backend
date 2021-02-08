@@ -178,25 +178,4 @@ export class UserService implements UserInterface {
             return Promise.reject(new InternalError(500, error))
         }
     }
-
-    /*****   Internal Service Functions   *****/
-    // This functions are only used by other functions as query provider
-
-    async getUserByDni(dni: string): Promise<Voter | null> {
-        try {
-            // Get a voter with matching mail or dni
-            let voter = await Voter.findOne({
-                where: {
-                    [Op.or]: [
-                        { dni: dni }
-                    ]
-                }
-            })
-
-            return Promise.resolve(voter)
-        }
-        catch (error) {
-            return Promise.reject(error)
-        }
-    }
 }
