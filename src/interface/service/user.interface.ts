@@ -3,7 +3,6 @@ import { Result } from "../result.interface";
 import { BaseInterface } from "./base.interface";
 
 export interface UserInterface extends BaseInterface {
-    getUserByDni(dni: string): Promise<Voter | null>
     getAllEvents(userId: number): Promise<Result>
     updatePassword(userId: number, oldPassword: string, newPassword: string): Promise<Result>
 }
