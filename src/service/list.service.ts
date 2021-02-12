@@ -1,8 +1,6 @@
 // Error
-import { BadRequestError } from "../error/bad.request.error";
 import { InternalError } from "../error/base.error";
 import { NotFoundError } from "../error/not.found.error";
-import { NotPermittedError } from "../error/not.permitted.error";
 import { Payload } from "../interface/request.interface";
 // Interface
 import { Result } from '../interface/result.interface';
