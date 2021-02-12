@@ -1,7 +1,19 @@
-import { BelongsTo, Column, Model, CreatedAt, ForeignKey, Table, UpdatedAt } from "sequelize-typescript"
+import { BelongsTo, Column, Model, CreatedAt, ForeignKey, Table, UpdatedAt, Scopes } from "sequelize-typescript"
 import { Event } from "./event.model"
 import { List } from "./list.model"
 
+@Scopes(() => ({
+    list: {
+        include: [
+            {
+                model: List,
+                attributes: {
+                    exclude: ["createdAt", "updatedAt"],
+                }
+            }
+        ]
+    }
+}))
 @Table
 export class Candidate extends Model<Candidate>{
 
@@ -70,6 +82,9 @@ export class Candidate extends Model<Candidate>{
         onDelete: "CASCADE"
     })
     listId!: number
+
+    @BelongsTo(() => List)
+    list?: List
 
     @Column({
         allowNull: false,

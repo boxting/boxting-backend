@@ -19,7 +19,7 @@ export class CandidateService implements CandidateInterface {
     async get(): Promise<Result> {
         try {
             // Find all candidates
-            let candidates = await Candidate.findAll()
+            let candidates = await Candidate.scope('list').findAll()
 
             // Remove null data
             const res = clearData(candidates)
@@ -69,7 +69,7 @@ export class CandidateService implements CandidateInterface {
     async getById(id: string): Promise<Result> {
         try {
             // Find candidate
-            const candidate = await Candidate.findByPk(id)
+            const candidate = await Candidate.scope('list').findByPk(id)
 
             if (candidate == null) {
                 return Promise.reject(new NotFoundError(8001, 'No candidate found with provided id'))
@@ -115,7 +115,7 @@ export class CandidateService implements CandidateInterface {
             await ListValidator.checkIfExists(listId)
 
             // Find all candidates
-            let candidates = await Candidate.findAll({ where: { listId: listId } })
+            let candidates = await Candidate.scope('list').findAll({ where: { listId: listId } })
 
             // Remove null data
             const res = clearData(candidates)
@@ -137,7 +137,7 @@ export class CandidateService implements CandidateInterface {
             await ElectionValidator.checkIfExists(electionId)
 
             // Find all candidates
-            let candidates = await Candidate.findAll({ where: { electionId: electionId } })
+            let candidates = await Candidate.scope('list').findAll({ where: { electionId: electionId } })
 
             // Remove null data
             const res = clearData(candidates)
