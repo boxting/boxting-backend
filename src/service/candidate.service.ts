@@ -95,7 +95,7 @@ export class CandidateService implements CandidateInterface {
             }
 
             // Cannot update ids
-            newCandidate.listId = candidate.listId
+            //newCandidate.listId = candidate.listId
             newCandidate.electionId = candidate.electionId
 
             await Candidate.update(newCandidate, { where: { id: id } })
@@ -272,6 +272,36 @@ export class CandidateService implements CandidateInterface {
         }
     }
 
+    async getByIdFromElectionWithRole(userPayload: Payload, candidateId: number, electionId: number): Promise<Result> {
+        try {
+
+            // Check if election exists
+            const election = await ElectionValidator.checkIfExists(electionId)
+
+            // If user is not admin, validate ownership or participation
+            if (userPayload.role != RoleEnum.ADMIN) {
+                if (userPayload.role == RoleEnum.VOTER) {
+                    // Validate if user is suscribed to the event
+                    await ElectionValidator.checkParticipation(election.eventId, userPayload.id)
+                } else {
+                    // Validate if user is owner or collaborator of the event
+                    await ElectionValidator.checkUserOwnershipOrCollaboration(election.eventId, userPayload.id)
+                }
+            }
+
+            // Get candidate
+            let res = await this.getById(candidateId.toString())
+
+            return Promise.resolve(res)
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
     async updateWithRole(userPayload: Payload, listId: number, candidateId: number, candidate: Candidate) {
         try {
 
@@ -297,16 +327,68 @@ export class CandidateService implements CandidateInterface {
         }
     }
 
+    async updateFromElectionWithRole(userPayload: Payload, electionId: number,
+        candidateId: number, candidate: Candidate): Promise<Result> {
+        try {
+
+            // Check if election exists and has not started yet
+            const election = await ElectionValidator.checkIfExistsAndStarted(electionId)
+
+            // If user is not admin, validate ownership
+            if (userPayload.role != RoleEnum.ADMIN) {
+                // Validate if user is owner or collaborator of the event
+                await ElectionValidator.checkUserOwnershipOrCollaboration(election.eventId, userPayload.id)
+            }
+
+            // Update the candidate
+            let res = await this.update(candidateId.toString(), candidate)
+
+            return Promise.resolve(res)
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+
     async deleteWithRole(userPayload: Payload, listId: number, candidateId: number) {
         try {
 
-            // Check if list exists
+            // Check if list exists and has not started yet
             const list = await ListValidator.checkIfExistsAndStarted(listId)
 
             // If user is not admin, validate ownership
             if (userPayload.role != RoleEnum.ADMIN) {
                 // Validate if user is owner of the event
                 await ElectionValidator.checkUserOwnership(list.election!.eventId, userPayload.id)
+            }
+
+            // Delete the candidate
+            let res = await this.delete(candidateId.toString())
+
+            return Promise.resolve(res)
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async deleteFromElectionWithRole(userPayload: Payload, electionId: number, candidateId: number): Promise<Result>{
+        try {
+
+            // Check if election exists and has not started yet
+            const election = await ElectionValidator.checkIfExistsAndStarted(electionId)
+
+            // If user is not admin, validate ownership
+            if (userPayload.role != RoleEnum.ADMIN) {
+                // Validate if user is owner of the event
+                await ElectionValidator.checkUserOwnership(election.eventId, userPayload.id)
             }
 
             // Delete the candidate

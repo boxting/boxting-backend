@@ -5,7 +5,7 @@ import { Type } from "./type.model"
 
 @Scopes(() => ({
     event: {
-        attributes: ["id", "name"],
+        attributes: ["id", "name", "eventId"],
         include: [
             {
                 model: Event,

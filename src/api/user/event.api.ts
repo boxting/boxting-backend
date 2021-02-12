@@ -5,7 +5,8 @@ import {
     handleUpdateEventWithToken,
     handleCreateEventWithToken,
     handleSuscribeVoterWithToken,
-    handleAddCollaborator
+    handleAddCollaborator,
+    handleAddCollaboratorWithUsername
 } from "../../controller/event.controller";
 import { authenticateToken } from "../../middleware/jwt.middleware";
 import { authenticateRole } from "../../middleware/role.middleware";
@@ -13,7 +14,8 @@ import { RoleEnum } from "../../utils/role.enum";
 
 const router = Router()
 
-router.post('/:id/add/collaborator', authenticateToken, authenticateRole([RoleEnum.ADMIN, RoleEnum.ORGANIZER]), handleAddCollaborator)
+router.post('/:id/add/collaborator', authenticateToken, authenticateRole([RoleEnum.ORGANIZER]), handleAddCollaborator)
+router.post('/:id/add/collaborator/:username', authenticateToken, authenticateRole([RoleEnum.ORGANIZER]), handleAddCollaboratorWithUsername)
 router.post('/create', authenticateToken, authenticateRole([RoleEnum.ORGANIZER]), handleCreateEventWithToken)
 router.get('/id/:id', authenticateToken, handleGetEventByIdWithToken)
 router.delete('/id/:id', authenticateToken, authenticateRole([RoleEnum.ORGANIZER, RoleEnum.ADMIN]), handleDeleteEventWithToken )
