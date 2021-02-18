@@ -6,6 +6,23 @@ import { Voter } from "../../model/voter.model"
 
 export class UserValidator {
 
+    public static async checkIfExists(userId: number) {
+        try {
+            // Find user with specified username
+            const user: User | null = await User.findByPk(userId)
+
+            // Check if an user was found
+            if (user == null) {
+                return Promise.reject(new NotFoundError(3001, "No user found with this id."))
+            }
+
+            return Promise.resolve(user)
+        } catch (error) {
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
     public static async checkIfExistsByUsername(username: string) {
         try {
             // Find user with specified username
