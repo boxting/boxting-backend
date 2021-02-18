@@ -265,10 +265,7 @@ export class EventService implements EventInterface {
         try {
 
             //Check if user exists
-            let user = await User.findByPk(userId)
-            if (user == null) {
-                return Promise.reject(new NotFoundError(3001, "No user found with this id"))
-            }
+            let user = await UserValidator.checkIfExists(userId)
 
             //Check if is a voter
             if (user.roleId != RoleEnum.VOTER) {
@@ -302,6 +299,34 @@ export class EventService implements EventInterface {
         }
     }
 
+    async unregisterUser(userId: number, eventId: number): Promise<Result> {
+        try {
+
+            // Check if event exists
+            await EventValidator.checkIfExists(eventId)
+
+            //Check if user exists
+            await UserValidator.checkIfExists(userId)
+
+            //Check if relation exists
+            let userEventRelation = await UserEvent.findOne({ where: { userId: userId, eventId: eventId } })
+
+            if (userEventRelation == null) {
+                return Promise.reject(new BadRequestError(4014, "The user is not subscribed to the specified event."))
+            }
+
+            await userEventRelation.destroy()
+
+            return Promise.resolve({ success: true, data: 'User unsubscribed.' })
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
     async registerCollaborator(object: User, eventId: number, userPayload: Payload): Promise<Result> {
         try {
 
@@ -323,7 +348,6 @@ export class EventService implements EventInterface {
 
             return Promise.resolve({ success: true, data: res })
         } catch (error) {
-
             if (error.errorCode != undefined) {
                 return Promise.reject(error)
             }
