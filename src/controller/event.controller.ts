@@ -108,7 +108,7 @@ export async function handleCreateEventWithToken(req: Request, res: Response, ne
     }
 }
 
-export async function handleSuscribeVoter(req: Request, res: Response, next: NextFunction) {
+export async function handlesubscribeVoter(req: Request, res: Response, next: NextFunction) {
     try {
         let { userId, eventCode, accessCode } = req.body
         const data = await events.registerVoter(userId, eventCode, accessCode)
@@ -119,7 +119,7 @@ export async function handleSuscribeVoter(req: Request, res: Response, next: Nex
     }
 }
 
-export async function handleSuscribeVoterWithToken(req: Request, res: Response, next: NextFunction) {
+export async function handlesubscribeVoterWithToken(req: Request, res: Response, next: NextFunction) {
     try {
         let { eventCode, accessCode } = req.body
 

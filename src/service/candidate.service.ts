@@ -162,7 +162,7 @@ export class CandidateService implements CandidateInterface {
             // If user is not admin, validate ownership or participation
             if (userPayload.role != RoleEnum.ADMIN) {
                 if (userPayload.role == RoleEnum.VOTER) {
-                    // Validate if user is suscribed to the event
+                    // Validate if user is subscribed to the event
                     await ElectionValidator.checkParticipation(list.election!.eventId, userPayload.id)
                 } else {
                     // Validate if user is owner or collaborator of the event
@@ -192,7 +192,7 @@ export class CandidateService implements CandidateInterface {
             // If user is not admin, validate ownership or participation
             if (userPayload.role != RoleEnum.ADMIN) {
                 if (userPayload.role == RoleEnum.VOTER) {
-                    // Validate if user is suscribed to the event
+                    // Validate if user is subscribed to the event
                     await ElectionValidator.checkParticipation(election.eventId, userPayload.id)
                 } else {
                     // Validate if user is owner or collaborator of the event
@@ -251,7 +251,7 @@ export class CandidateService implements CandidateInterface {
             // If user is not admin, validate ownership or participation
             if (userPayload.role != RoleEnum.ADMIN) {
                 if (userPayload.role == RoleEnum.VOTER) {
-                    // Validate if user is suscribed to the event
+                    // Validate if user is subscribed to the event
                     await ElectionValidator.checkParticipation(list.election!.eventId, userPayload.id)
                 } else {
                     // Validate if user is owner or collaborator of the event
@@ -281,7 +281,7 @@ export class CandidateService implements CandidateInterface {
             // If user is not admin, validate ownership or participation
             if (userPayload.role != RoleEnum.ADMIN) {
                 if (userPayload.role == RoleEnum.VOTER) {
-                    // Validate if user is suscribed to the event
+                    // Validate if user is subscribed to the event
                     await ElectionValidator.checkParticipation(election.eventId, userPayload.id)
                 } else {
                     // Validate if user is owner or collaborator of the event

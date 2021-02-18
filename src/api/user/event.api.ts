@@ -4,7 +4,7 @@ import {
     handleGetEventByIdWithToken,
     handleUpdateEventWithToken,
     handleCreateEventWithToken,
-    handleSuscribeVoterWithToken,
+    handlesubscribeVoterWithToken,
     handleAddCollaborator,
     handleAddCollaboratorWithUsername,
     handleGetAllCollaborators,
@@ -39,8 +39,8 @@ router.delete('/id/:id', authenticateToken,
 router.put('/id/:id', authenticateToken,
     authenticateRole([RoleEnum.ORGANIZER, RoleEnum.COLLABORATOR]), handleUpdateEventWithToken)
 
-router.post('/suscribe/voter', authenticateToken,
-    authenticateRole([RoleEnum.VOTER]), handleSuscribeVoterWithToken)
+router.post('/subscribe/voter', authenticateToken,
+    authenticateRole([RoleEnum.VOTER]), handlesubscribeVoterWithToken)
 
 
 export { router as eventApi }
