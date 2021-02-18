@@ -137,7 +137,7 @@ export class ListService implements ListInterface {
             // If user is not admin, validate ownership or participation
             if (userPayload.role != RoleEnum.ADMIN) {
                 if (userPayload.role == RoleEnum.VOTER) {
-                    // Validate if user is suscribed to the election
+                    // Validate if user is subscribed to the election
                     await ElectionValidator.checkParticipation(election.eventId, userPayload.id)
                 } else {
                     // Validate if user is owner or collaborator of the election
@@ -195,7 +195,7 @@ export class ListService implements ListInterface {
             // If user is not admin, validate ownership or participation
             if (userPayload.role != RoleEnum.ADMIN) {
                 if (userPayload.role == RoleEnum.VOTER) {
-                    // Validate if user is suscribed to the election
+                    // Validate if user is subscribed to the election
                     await ElectionValidator.checkParticipation(election.eventId, userPayload.id)
                 } else {
                     // Validate if user is owner or collaborator of the election

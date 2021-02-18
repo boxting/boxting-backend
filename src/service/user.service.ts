@@ -14,10 +14,8 @@ import { Organizer } from "../model/organizer.model";
 import { clearData } from "../utils/clear.response";
 import { RoleEnum } from "../utils/role.enum";
 // Packages
-import { Op } from "sequelize";
 import bcrypt from "bcrypt"
 import { calculateAge } from "../utils/date.functions";
-import { Console } from "console";
 
 export class UserService implements UserInterface {
 

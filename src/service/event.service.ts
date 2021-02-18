@@ -48,7 +48,7 @@ export class EventService implements EventInterface {
     async getById(id: string): Promise<Result> {
         try {
             // Get the event with specified id
-            let event = await Event.scope('full').findByPk(id)
+            let event = await Event.findByPk(id)
 
             // Check if result is null
             if (event == null) {
@@ -64,17 +64,26 @@ export class EventService implements EventInterface {
         }
     }
 
+    async getAllUsers(id: string, scope: string): Promise<Result> {
+        try {
+            // Get the event with voter scope that will also get list of users with the scope
+            let event = await Event.scope(scope).findByPk(id)
+
+            // Return data (id existance has already been validated)
+            return Promise.resolve({ success: true, data: event!.users })
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+
     async getByIdWithRole(id: string, role: number, userId: number): Promise<Result> {
         try {
             // Declare event
             let event: Event | null = null
 
             // Get event according to the user role
-            if (role == RoleEnum.VOTER) {
-                event = await Event.scope('voter').findByPk(id)
-            } else {
-                event = await Event.scope('full').findByPk(id)
-            }
+            event = await Event.findByPk(id)
 
             // Check if event was found
             if (event == null) {
@@ -256,10 +265,7 @@ export class EventService implements EventInterface {
         try {
 
             //Check if user exists
-            let user = await User.findByPk(userId)
-            if (user == null) {
-                return Promise.reject(new NotFoundError(3001, "No user found with this id"))
-            }
+            let user = await UserValidator.checkIfExists(userId)
 
             //Check if is a voter
             if (user.roleId != RoleEnum.VOTER) {
@@ -293,6 +299,34 @@ export class EventService implements EventInterface {
         }
     }
 
+    async unregisterUser(userId: number, eventId: number): Promise<Result> {
+        try {
+
+            // Check if event exists
+            await EventValidator.checkIfExists(eventId)
+
+            //Check if user exists
+            await UserValidator.checkIfExists(userId)
+
+            //Check if relation exists
+            let userEventRelation = await UserEvent.findOne({ where: { userId: userId, eventId: eventId } })
+
+            if (userEventRelation == null) {
+                return Promise.reject(new BadRequestError(4014, "The user is not subscribed to the specified event."))
+            }
+
+            await userEventRelation.destroy()
+
+            return Promise.resolve({ success: true, data: 'User unsubscribed.' })
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
     async registerCollaborator(object: User, eventId: number, userPayload: Payload): Promise<Result> {
         try {
 
@@ -314,7 +348,6 @@ export class EventService implements EventInterface {
 
             return Promise.resolve({ success: true, data: res })
         } catch (error) {
-
             if (error.errorCode != undefined) {
                 return Promise.reject(error)
             }
@@ -339,7 +372,7 @@ export class EventService implements EventInterface {
             const collaborator = await UserValidator.checkIfExistsByUsername(username)
 
             // Check if obtained user is collaborator
-            if( collaborator.roleId != RoleEnum.COLLABORATOR){
+            if (collaborator.roleId != RoleEnum.COLLABORATOR) {
                 return Promise.reject(new BadRequestError(4013, 'The inserted username is not a collaborator.'))
             }
 
@@ -347,6 +380,33 @@ export class EventService implements EventInterface {
             let res = await UserEvent.create({ userId: collaborator.id, eventId: eventId, isCollaborator: true })
 
             return Promise.resolve({ success: true, data: res })
+        } catch (error) {
+
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async getAllUsersWithRole(eventId: number, userPayload: Payload, scope: 'voter' | 'collaborator'): Promise<Result> {
+        try {
+
+            // Check if event exists
+            await EventValidator.checkIfExists(eventId)
+
+            // If user is not admin, validate ownership
+            if (userPayload.role != RoleEnum.ADMIN) {
+                // Validate if user is owner or collaborator of the event
+                await EventValidator.checkUserOwnershipOrCollaboration(eventId, userPayload.id)
+            }
+
+            // Get list of users with the specified scope
+            let data = await this.getAllUsers(eventId.toString(), scope)
+
+            // Return list of users
+            return Promise.resolve({ success: true, data: data.data })
         } catch (error) {
 
             if (error.errorCode != undefined) {

@@ -108,7 +108,7 @@ export async function handleCreateEventWithToken(req: Request, res: Response, ne
     }
 }
 
-export async function handleSuscribeVoter(req: Request, res: Response, next: NextFunction) {
+export async function handlesubscribeVoter(req: Request, res: Response, next: NextFunction) {
     try {
         let { userId, eventCode, accessCode } = req.body
         const data = await events.registerVoter(userId, eventCode, accessCode)
@@ -119,7 +119,7 @@ export async function handleSuscribeVoter(req: Request, res: Response, next: Nex
     }
 }
 
-export async function handleSuscribeVoterWithToken(req: Request, res: Response, next: NextFunction) {
+export async function handlesubscribeVoterWithToken(req: Request, res: Response, next: NextFunction) {
     try {
         let { eventCode, accessCode } = req.body
 
@@ -127,6 +127,34 @@ export async function handleSuscribeVoterWithToken(req: Request, res: Response, 
         const userId = tokenRequest.user.id
 
         const data = await events.registerVoter(userId, eventCode, accessCode)
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleUnsubscribeVoterWithToken(req: Request, res: Response, next: NextFunction) {
+    try {
+        const eventId = req.params.id
+
+        const tokenRequest = req as TokenRequest
+        const userId = tokenRequest.user.id
+        console.log(eventId, userId)
+        const data = await events.unregisterUser(userId, Number(eventId))
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleUnsubscribeUser(req: Request, res: Response, next: NextFunction) {
+    try {
+        const userId = req.params.userId
+        const eventId = req.params.id
+
+        const data = await events.unregisterUser(Number(userId), Number(eventId))
 
         res.status(Status.OK).send(data)
     } catch (error) {
@@ -155,6 +183,32 @@ export async function handleAddCollaboratorWithUsername(req: Request, res: Respo
         const tokenRequest = req as TokenRequest
 
         const data = await events.registerCollaboratorByUsername(username, Number(eventId), tokenRequest.user)
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleGetAllVoters(req: Request, res: Response, next: NextFunction) {
+    try {
+        const eventId = req.params.id
+        const tokenRequest = req as TokenRequest
+
+        const data = await events.getAllUsersWithRole(Number(eventId), tokenRequest.user, 'voter')
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleGetAllCollaborators(req: Request, res: Response, next: NextFunction) {
+    try {
+        const eventId = req.params.id
+        const tokenRequest = req as TokenRequest
+
+        const data = await events.getAllUsersWithRole(Number(eventId), tokenRequest.user, 'collaborator')
 
         res.status(Status.OK).send(data)
     } catch (error) {

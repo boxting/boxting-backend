@@ -8,12 +8,16 @@ import { Voter } from "./voter.model"
 import { Election } from "./election.model"
 
 @Scopes(() => ({
-    full: {
+    voter: {
         include: [
             {
                 model: User,
+                through: {
+                    attributes:[],
+                    where: { isOwner: false, isCollaborator: false}                    
+                },
                 attributes: {
-                    exclude: ["password"]
+                    exclude: ["password", "createdAt", "updatedAt"]
                 },
                 include: [
                     {
@@ -25,6 +29,26 @@ import { Election } from "./election.model"
                         attributes: {
                             exclude: ["createdAt", "updatedAt", "userId"],
                         }
+                    }
+                ],
+            }
+        ],
+    },
+    collaborator: {
+        include: [
+            {
+                model: User,
+                attributes: {
+                    exclude: ["password", "createdAt", "updatedAt"]
+                },
+                through: {
+                    attributes:[],
+                    where: { isOwner: false, isCollaborator: true}                    
+                },
+                include: [
+                    {
+                        model: Role,
+                        attributes: ["name"]
                     },
                     {
                         model: Organizer,
@@ -35,9 +59,6 @@ import { Election } from "./election.model"
                 ],
             }
         ],
-    },
-    voter: {
-
     }
 }))
 @Table
