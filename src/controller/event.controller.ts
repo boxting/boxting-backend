@@ -134,6 +134,34 @@ export async function handlesubscribeVoterWithToken(req: Request, res: Response,
     }
 }
 
+export async function handleUnsubscribeVoterWithToken(req: Request, res: Response, next: NextFunction) {
+    try {
+        const eventId = req.params.id
+
+        const tokenRequest = req as TokenRequest
+        const userId = tokenRequest.user.id
+        console.log(eventId, userId)
+        const data = await events.unregisterUser(userId, Number(eventId))
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleUnsubscribeUser(req: Request, res: Response, next: NextFunction) {
+    try {
+        const userId = req.params.userId
+        const eventId = req.params.id
+
+        const data = await events.unregisterUser(Number(userId), Number(eventId))
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export async function handleAddCollaborator(req: Request, res: Response, next: NextFunction) {
     try {
         const eventId = req.params.id
