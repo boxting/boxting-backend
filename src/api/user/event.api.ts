@@ -8,7 +8,9 @@ import {
     handleAddCollaborator,
     handleAddCollaboratorWithUsername,
     handleGetAllCollaborators,
-    handleGetAllVoters
+    handleGetAllVoters,
+    handleUnsubscribeVoterWithToken,
+    handleUnsubscribeUser
 } from "../../controller/event.controller";
 import { authenticateToken } from "../../middleware/jwt.middleware";
 import { authenticateRole } from "../../middleware/role.middleware";
@@ -41,6 +43,12 @@ router.put('/id/:id', authenticateToken,
 
 router.post('/subscribe/voter', authenticateToken,
     authenticateRole([RoleEnum.VOTER]), handlesubscribeVoterWithToken)
+
+router.delete('/:id/unsubscribe/voter', authenticateToken,
+    authenticateRole([RoleEnum.VOTER]), handleUnsubscribeVoterWithToken)
+
+router.delete('/:id/unsubscribe/user/:userId', authenticateToken,
+    authenticateRole([RoleEnum.ORGANIZER]), handleUnsubscribeUser)
 
 
 export { router as eventApi }
