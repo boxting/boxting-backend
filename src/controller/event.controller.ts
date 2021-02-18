@@ -161,3 +161,29 @@ export async function handleAddCollaboratorWithUsername(req: Request, res: Respo
         next(error)
     }
 }
+
+export async function handleGetAllVoters(req: Request, res: Response, next: NextFunction) {
+    try {
+        const eventId = req.params.id
+        const tokenRequest = req as TokenRequest
+
+        const data = await events.getAllUsersWithRole(Number(eventId), tokenRequest.user, 'voter')
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleGetAllCollaborators(req: Request, res: Response, next: NextFunction) {
+    try {
+        const eventId = req.params.id
+        const tokenRequest = req as TokenRequest
+
+        const data = await events.getAllUsersWithRole(Number(eventId), tokenRequest.user, 'collaborator')
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
