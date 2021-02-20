@@ -9,7 +9,7 @@ export class UserValidator {
     public static async checkIfExists(userId: number) {
         try {
             // Find user with specified username
-            const user: User | null = await User.findByPk(userId)
+            const user: User | null = await User.scope('full').findByPk(userId)
 
             // Check if an user was found
             if (user == null) {
@@ -26,7 +26,7 @@ export class UserValidator {
     public static async checkIfExistsByUsername(username: string) {
         try {
             // Find user with specified username
-            const user: User | null = await User.findOne({ where: { username: username } })
+            const user: User | null = await User.scope('full').findOne({ where: { username: username } })
 
             // Check if an user was found
             if (user == null) {

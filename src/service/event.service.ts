@@ -340,13 +340,13 @@ export class EventService implements EventInterface {
             }
 
             // Register the collaborator as a user
-            const collaborator = await this.loginService.registerOrganizer(object, true)
-            const user = collaborator.data as User
+            const res = await this.loginService.registerOrganizer(object, true)
+            const collaborator = res.data as User
 
             // Create collaborator event relation
-            let res = await UserEvent.create({ userId: user.id, eventId: eventId, isCollaborator: true })
+            await UserEvent.create({ userId: collaborator.id, eventId: eventId, isCollaborator: true })
 
-            return Promise.resolve({ success: true, data: res })
+            return Promise.resolve({ success: true, data: collaborator })
         } catch (error) {
             if (error.errorCode != undefined) {
                 return Promise.reject(error)
@@ -376,8 +376,13 @@ export class EventService implements EventInterface {
                 return Promise.reject(new BadRequestError(4013, 'The inserted username is not a collaborator.'))
             }
 
+            // Validate if user is already subscribed
+            await EventValidator.checkIfUserIsAlreadySubscribed(eventId, collaborator.id)
+
             // Create collaborator event relation
-            let res = await UserEvent.create({ userId: collaborator.id, eventId: eventId, isCollaborator: true })
+            await UserEvent.create({ userId: collaborator.id, eventId: eventId, isCollaborator: true })
+
+            const res = clearData(collaborator)
 
             return Promise.resolve({ success: true, data: res })
         } catch (error) {

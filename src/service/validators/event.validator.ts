@@ -86,5 +86,19 @@ export class EventValidator {
             return Promise.reject(new InternalError(500, error))
         }
     }
+
+    public static async checkIfUserIsAlreadySubscribed(eventId: number, userId: number) {
+        try {
+            const relation: UserEvent | null = await UserEvent.findOne({ where: { userId: userId, eventId: eventId } })
+
+            if (relation != null) {
+                return Promise.reject(new BadRequestError(4015, "The user is already subscribed to event."))
+            }
+
+            return Promise.resolve(true)
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
 }
 

@@ -7,7 +7,7 @@ import { Voter } from "./voter.model"
 
 @Scopes(() => ({
     full: {
-        attributes: ["id", "username", "mail", "isActive"],
+        attributes: ["id", "username", "mail", "isActive", "roleId"],
         include: [
             {
                 model: Role,
