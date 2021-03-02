@@ -1,7 +1,4 @@
-import * as jwt from 'jsonwebtoken'
-import { config } from 'dotenv'
 import { Response, NextFunction } from 'express'
-import { Payload } from '../interface/request.interface'
 import { TokenManager } from '../utils/token.manager'
 
 const tokenManager = TokenManager.getInstance()

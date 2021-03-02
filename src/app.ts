@@ -3,19 +3,19 @@ import { MySequelize } from "./database/sequelize";
 // Middleware
 import { handleError } from "./middleware/error.middleware";
 // Admin Api
-import { adminUserApi } from "./api/admin/admin.user.api";
-import { adminEventApi } from "./api/admin/admin.event.api";
-import { adminElectionApi } from "./api/admin/admin.election.api";
-import { adminListApi } from "./api/admin/admin.list.api";
-import { adminCandidateApi } from "./api/admin/admin.candidate.api";
+import { adminUserApi } from "./components/user/api/admin.user.api";
+import { adminEventApi } from "./components/event/api/admin.event.api";
+import { adminElectionApi } from "./components/election/api/admin.election.api";
+import { adminListApi } from "./components/list/api/admin.list.api";
+import { adminCandidateApi } from "./components/candidate/api/admin.candidate.api";
 // User Api
-import { accessCodeApi } from "./api/user/access.code.api";
-import { userApi } from "./api/user/user.api";
-import { eventApi } from "./api/user/event.api";
-import { loginApi } from "./api/user/login.api";
-import { electionApi } from "./api/user/election.api";
-import { listApi } from "./api/user/list.api";
-import { candidateApi } from "./api/user/candidate.api";
+import { accessCodeApi } from "./components/codes/api/access.code.api";
+import { userApi } from "./components/user/api/user.api";
+import { eventApi } from "./components/event/api/event.api";
+import { loginApi } from "./components/login/api/login.api";
+import { electionApi } from "./components/election/api/election.api";
+import { listApi } from "./components/list/api/list.api";
+import { candidateApi } from "./components/candidate/api/candidate.api";
 // Packages
 import Express, { Application } from "express";
 import { config as EnvConfig } from "dotenv"

@@ -1,19 +1,19 @@
 import { config } from "dotenv";
 import { Sequelize } from "sequelize-typescript";
 import { createInitialData } from "./create.initial"
-import { AccessCode } from "../model/access.code.model";
-import { Election } from "../model/election.model";
-import { Event } from "../model/event.model";
-import { Organizer } from "../model/organizer.model";
-import { Role } from "../model/role.model";
-import { UserEvent } from "../model/user.event.model";
-import { User } from "../model/user.model";
-import { Voter } from "../model/voter.model";
-import { Type } from "../model/type.model";
-import { List } from "../model/list.model";
-import { Candidate } from "../model/candidate.model";
-import { PasswordToken } from "../model/password.token.model";
-import { RefreshToken } from "../model/refresh.token.model";
+import { AccessCode } from "../components/codes/model/access.code.model";
+import { Election } from "../components/election/model/election.model";
+import { Event } from "../components/event/model/event.model";
+import { Organizer } from "../components/user/model/organizer.model";
+import { Role } from "../components/role/model/role.model";
+import { UserEvent } from "../components/event/model/user.event.model";
+import { User } from "../components/user/model/user.model";
+import { Voter } from "../components/user/model/voter.model";
+import { Type } from "../components/type/model/type.model";
+import { List } from "../components/list/model/list.model";
+import { Candidate } from "../components/candidate/model/candidate.model";
+import { PasswordToken } from "../components/token/model/password.token.model";
+import { RefreshToken } from "../components/token/model/refresh.token.model";
 
 export class MySequelize {
 
@@ -57,8 +57,8 @@ export class MySequelize {
         createInitialData()
             .then(() => console.log('Initial data creation completed'))
             .catch((error) => {
-            console.log('Something went wrong trying to create initial data', error)
-        })
+                console.log('Something went wrong trying to create initial data', error)
+            })
     }
 
     public static getConnection() {

@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken'
+import { User } from '../components/user/model/user.model'
 import { BadRequestError } from '../error/bad.request.error'
 import { Payload } from '../interface/request.interface'
 import { UserTokens } from '../interface/token.interface'
-import { User } from '../model/user.model'
 
 export class TokenManager {
 
@@ -26,7 +26,7 @@ export class TokenManager {
 
             const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15h' })
             const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET)
-           
+
             return Promise.resolve({ token: token, refreshToken: refreshToken })
         } catch (error) {
             return Promise.reject(error)
@@ -85,9 +85,9 @@ export class TokenManager {
         }
     }
 
-    async refreshToken(refreshToken: string) : Promise<string>{
+    async refreshToken(refreshToken: string): Promise<string> {
         try {
-            
+
             // Validate if refresh token is valid
             const payload = await this.verifyRefreshToken(refreshToken)
 

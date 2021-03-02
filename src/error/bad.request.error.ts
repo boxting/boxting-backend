@@ -1,9 +1,9 @@
-export class BadRequestError extends Error{
-    
+export class BadRequestError extends Error {
+
     statusCode: number
     errorCode: number
 
-    constructor(errorCode:number, message?: string){
+    constructor(errorCode: number, message?: string) {
         super();
         Error.captureStackTrace(this, this.constructor)
         this.name = this.constructor.name
