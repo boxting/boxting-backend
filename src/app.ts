@@ -22,6 +22,7 @@ import { config as EnvConfig } from "dotenv"
 import Morgan from "morgan"
 import Cors from "cors"
 import { json } from "body-parser"
+import { CryptoManager } from "./utils/crypto.manager";
 
 export class App {
 
@@ -71,7 +72,11 @@ export class App {
     }
 
     async listen() {
+        // Initialize crypto manager
+        CryptoManager.getInstance()
+        // Sync sequelize 
         await this.sequelize.conn.sync()
+        // Listen designed port
         this.app.listen(this.app.get('port'))
         console.log("App listening to port", this.app.get('port'))
     }
