@@ -309,7 +309,10 @@ export class LoginService implements LoginInterface {
 
             return Promise.resolve({ success: true, data: 'Password token sent to mail' })
         } catch (error) {
-            return Promise.reject(new InternalError(500, error))
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+            return Promise.reject(new InternalError(error))
         }
     }
 
