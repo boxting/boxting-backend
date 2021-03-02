@@ -1,4 +1,3 @@
-
 export function calculateAge(birthday: Date) {
     var ageDifMs = Date.now() - birthday.getTime()
 

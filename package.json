@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "copy:package": "node -e \"require('fs').copyFile('./package.json', './dist/package.json', function(err) { if (err) console.log(err); console.log('package.json copied!') })\"",
-    "copy:templates": "node -e \"require('fs-extra').copySync('./src/template', './dist/template')\"",
+    "copy:templates": "node -e \"require('fs-extra').copySync('./src/components/mailing/template', './dist/components/mailing/template')\"",
     "build": "tsc",
     "postbuild": "run-p copy:package copy:templates",
     "start": "node ./dist/index.js",

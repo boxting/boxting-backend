@@ -1,5 +1,5 @@
-import { Role } from "../model/role.model";
-import { Type } from "../model/type.model";
+import { Role } from "../components/role/model/role.model";
+import { Type } from "../components/type/model/type.model";
 
 export async function createInitialData() {
     try {
@@ -19,7 +19,7 @@ export async function createInitialData() {
                 updatedAt: Date.now()
             }
         ])
-        
+
         await Role.bulkCreate([
             {
                 id: 1,
@@ -47,7 +47,7 @@ export async function createInitialData() {
             }
         ])
 
-        
+
     } catch (error) {
         throw error
     }

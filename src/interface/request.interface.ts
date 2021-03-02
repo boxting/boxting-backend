@@ -5,7 +5,7 @@ export interface TokenRequest extends Request {
 }
 
 //Interface used to parse payload from token
-export interface Payload{
+export interface Payload {
     id: number,
     username: string,
     role: number,

@@ -1,9 +1,9 @@
-export class InternalError extends Error{
-    
+export class InternalError extends Error {
+
     statusCode: number
     errorCode: number
 
-    constructor(errorCode:number, message?: string, statusCode?: number){
+    constructor(errorCode: number, message?: string, statusCode?: number) {
         super();
         Error.captureStackTrace(this, this.constructor)
         this.name = this.constructor.name
