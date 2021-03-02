@@ -4,6 +4,7 @@ import * as mailer from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer'
 import * as path from 'path';
 import { InternalError } from '../../../error/base.error';
+import { config } from 'dotenv';
 
 export class MailingService {
 
@@ -12,6 +13,10 @@ export class MailingService {
     transporter: Mail
 
     constructor() {
+
+        // Call config to read env variables
+        config()
+
         try {
             this.transporter = mailer.createTransport({
                 host: process.env.SMTP_HOST,
@@ -21,7 +26,8 @@ export class MailingService {
                     user: process.env.SMTP_USER,
                     pass: process.env.SMTP_PASSWORD
                 }
-            });
+            })
+
             console.log('Mailing server connected')
         } catch (error) {
             console.log('Something went wrong trying to connect with SMTP server')
