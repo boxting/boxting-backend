@@ -12,6 +12,12 @@ import { clearData } from '../../../utils/clear.response';
 // Validators
 import { EventValidator } from '../../event/validator/event.validator'
 import { RoleEnum } from "../../../utils/role.enum";
+import { ElectionValidator } from "../validator/election.validator";
+import { Event } from "../../event/model/event.model";
+import { BadRequestError } from "../../../error/bad.request.error";
+import { NotPermittedError } from "../../../error/not.permitted.error";
+import { CryptoManager } from "../../../utils/crypto.manager";
+import { ContractManager } from "../../contract/util/cotract.manager";
 
 export class ElectionService implements ElectionInterface {
 
@@ -257,6 +263,66 @@ export class ElectionService implements ElectionInterface {
 
             // Delete the election
             let res = await this.delete(electionId.toString())
+
+            return Promise.resolve(res)
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async getElectionResults(userPayload: Payload, electionId: number): Promise<Result> {
+        try {
+            // Check if election exist
+            const election = await ElectionValidator.checkIfExists(electionId)
+
+            // Get event
+            const event = await Event.findByPk(election.eventId)
+
+            // Check if result is null
+            if (event == null) {
+                return Promise.reject(new NotFoundError(4001, "No event found."))
+            }
+
+            // If user is not admin, validate ownership
+            if (userPayload.role != RoleEnum.ADMIN) {
+                if (userPayload.role == RoleEnum.VOTER) {
+                    // Validate voter participation
+                    await EventValidator.checkParticipation(event.id, userPayload.id)
+                } else {
+                    // Validate if user is owner of the event
+                    await EventValidator.checkUserOwnershipOrCollaboration(event.id, userPayload.id)
+                }
+            }
+
+            // Check if event was already initiated
+            if (!event.configCompleted) {
+                return Promise.reject(new BadRequestError(9018, 'The event has not been initiated.'))
+            }
+
+            // Check if contract url exist
+            if (event.contract == undefined || event.contract == '') {
+                return Promise.reject(new BadRequestError(9015, 'A contract conecction has not been set yet.'))
+            }
+
+            // Validate date
+            const currentDate = Date.now()
+            const endDate = event.endDate.getTime()
+
+            if (currentDate < endDate) {
+                return Promise.reject(new NotPermittedError(10004, 'The event has not finished yet.'))
+            }
+
+            // Get the contract url
+            const cryptoManager = CryptoManager.getInstance()
+            const contractUrl = await cryptoManager.decrypt(event.contract)
+
+            // Send data to contract
+            const contractManager = ContractManager.getInstace()
+            const res = await contractManager.getElectionResults(contractUrl, electionId.toString())
 
             return Promise.resolve(res)
         } catch (error) {
