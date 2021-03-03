@@ -5,7 +5,8 @@ import {
     handleGetElectionById,
     handleDeleteElectionById,
     handleUpdateElectionById,
-    handleGetElectionResults
+    handleGetElectionResults,
+    handleEmitVote
 } from "../controller/election.controller";
 import { authenticateToken } from "../../../middleware/jwt.middleware";
 import { authenticateRole } from "../../../middleware/role.middleware";
@@ -27,5 +28,7 @@ router.put('/:electionId/event/:eventId', authenticateToken,
     authenticateRole([RoleEnum.ORGANIZER, RoleEnum.COLLABORATOR]), handleUpdateElectionById)
 
 router.get('/:electionId/results', authenticateToken, handleGetElectionResults)
+
+router.post('/:electionId/vote', authenticateToken, authenticateRole([RoleEnum.VOTER]), handleEmitVote)
 
 export { router as electionApi }
