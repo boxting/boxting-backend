@@ -7,6 +7,8 @@ import { AccessCode } from "../../codes/model/access.code.model";
 import { Event } from "../model/event.model";
 import { UserEvent } from "../model/user.event.model";
 import { User } from "../../user/model/user.model";
+import { Election } from "../../election/model/election.model";
+import { Candidate } from "../../candidate/model/candidate.model";
 // Interface
 import { EventInterface } from "../interface/event.interface"
 import { Result } from "../../../interface/result.interface";
@@ -14,6 +16,9 @@ import { Payload } from "../../../interface/request.interface";
 // Utils
 import { clearData } from "../../../utils/clear.response";
 import { RoleEnum } from "../../../utils/role.enum";
+import { CryptoManager } from "../../../utils/crypto.manager";
+import { TypeEnum } from "../../../utils/type.enum";
+import { ContractManager } from "../../contract/util/cotract.manager"
 // Service
 import { LoginService } from "../../login/service/login.service";
 // Packages
@@ -21,7 +26,11 @@ import { ValidationError } from "sequelize";
 // Validators
 import { EventValidator } from "../validator/event.validator"
 import { UserValidator } from "../../user/validator/user.validator"
-import { CryptoManager } from "../../../utils/crypto.manager";
+//Contract
+import { CandidateContract } from "../../contract/interface/model/candidate.contract.interface";
+import { ElectionContract } from "../../contract/interface/model/election.contract.interface";
+import { InitTransaction } from "../../contract/interface/transaction/init.transaction.interface";
+
 
 export class EventService implements EventInterface {
 
@@ -452,6 +461,102 @@ export class EventService implements EventInterface {
             return Promise.resolve({ success: true, data: 'New url saved.' })
 
         } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async initContract(eventId: number, userPayload: Payload): Promise<Result> {
+        try {
+            // Check if event exists
+            const event = await EventValidator.checkIfExists(eventId)
+
+            // If user is not an admin, check ownership
+            if (userPayload.role != RoleEnum.ADMIN) {
+                await EventValidator.checkUserOwnership(eventId, userPayload.id)
+            }
+
+            // Check if event was already initiated
+            if (event.configCompleted) {
+                return Promise.reject(new BadRequestError(400, 'Contract has already been initited.'))
+            }
+
+            // Check if contract url exist
+            if (event.contract == undefined || event.contract == '') {
+                return Promise.reject(new BadRequestError(400, 'A contract conecction has not been set yet.'))
+            }
+
+            // Get the elections
+            const electionsList: Election[] = await Election.findAll({
+                where: { eventId: eventId }
+            })
+
+            if (electionsList.length == 0) {
+                return Promise.reject(new BadRequestError(400, 'There has to be at least one election.'))
+            }
+
+            const elections: ElectionContract[] = []
+            const candidates: CandidateContract[] = []
+
+            for (let i = 0; i < electionsList.length; i++) {
+                const election = electionsList[i];
+
+                // push election
+                elections.push({
+                    electionType: (election.typeId == TypeEnum.SINGLE) ? 'single' : 'multiple',
+                    eventId: election.eventId.toString(),
+                    id: election.id.toString(),
+                    maxVotes: election.winners
+                })
+
+                // Get election candidates
+                const candidatesList = await Candidate.findAll({
+                    where: { electionId: election.id }
+                })
+
+                if (candidatesList.length < 2) {
+                    return Promise.reject(new BadRequestError(400, 'There has to be at least two candidates per election.'))
+                }
+
+                for (let j = 0; j < candidatesList.length; j++) {
+                    const candidate = candidatesList[j];
+
+                    // push candidate
+                    candidates.push({
+                        id: candidate.id.toString(),
+                        electionId: candidate.electionId.toString(),
+                        firstName: candidate.firstName,
+                        imageUrl: candidate.imageUrl,
+                        lastName: candidate.lastName
+                    })
+                }
+            }
+
+            // Create init transaction data
+            const data: InitTransaction = {
+                event: {
+                    id: event.id,
+                    endDate: event.endDate,
+                    startDate: event.startDate
+                },
+                candidates: candidates,
+                elections: elections
+            }
+
+            // Get the contract url
+            const cryptoManager = CryptoManager.getInstance()
+            const contractUrl = await cryptoManager.decrypt(event.contract)
+
+            // Send data to contract
+            const contractManager = ContractManager.getInstace()
+            const res = await contractManager.initEvent(contractUrl, data)
+
+            return Promise.resolve(res)
+        } catch (error) {
+
             if (error.errorCode != undefined) {
                 return Promise.reject(error)
             }
