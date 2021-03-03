@@ -554,6 +554,10 @@ export class EventService implements EventInterface {
             const contractManager = ContractManager.getInstace()
             const res = await contractManager.initEvent(contractUrl, data)
 
+            // Update event
+            event.configCompleted = true
+            await event.save()
+
             return Promise.resolve(res)
         } catch (error) {
 
