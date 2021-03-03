@@ -481,12 +481,12 @@ export class EventService implements EventInterface {
 
             // Check if event was already initiated
             if (event.configCompleted) {
-                return Promise.reject(new BadRequestError(400, 'Contract has already been initited.'))
+                return Promise.reject(new BadRequestError(9014, 'Contract has already been initited.'))
             }
 
             // Check if contract url exist
             if (event.contract == undefined || event.contract == '') {
-                return Promise.reject(new BadRequestError(400, 'A contract conecction has not been set yet.'))
+                return Promise.reject(new BadRequestError(9015, 'A contract conecction has not been set yet.'))
             }
 
             // Get the elections
@@ -495,7 +495,7 @@ export class EventService implements EventInterface {
             })
 
             if (electionsList.length == 0) {
-                return Promise.reject(new BadRequestError(400, 'There has to be at least one election.'))
+                return Promise.reject(new BadRequestError(9016, 'There has to be at least one election.'))
             }
 
             const elections: ElectionContract[] = []
@@ -518,7 +518,7 @@ export class EventService implements EventInterface {
                 })
 
                 if (candidatesList.length < 2) {
-                    return Promise.reject(new BadRequestError(400, 'There has to be at least two candidates per election.'))
+                    return Promise.reject(new BadRequestError(9017, 'There has to be at least two candidates per election.'))
                 }
 
                 for (let j = 0; j < candidatesList.length; j++) {
