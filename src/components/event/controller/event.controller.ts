@@ -203,3 +203,16 @@ export async function handleGetAllCollaborators(req: Request, res: Response, nex
         next(error)
     }
 }
+
+export async function handleUpdateContract(req: Request, res: Response, next: NextFunction) {
+    try {
+        const eventId = req.params.id
+        const { contractUrl } = req.body
+
+        const data = await events.updateContract(Number(eventId), contractUrl)
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
