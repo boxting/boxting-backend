@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios"
 import { Result } from "../../../interface/result.interface"
+import { EmitVoteTransaction } from "../interface/transaction/emit.vote.interface"
 import { InitTransaction } from "../interface/transaction/init.transaction.interface"
 
 export class ContractManager {
@@ -33,6 +34,22 @@ export class ContractManager {
     async getElectionResults(contractUrl: string, electionId: string): Promise<Result> {
         try {
             const res: AxiosResponse<Result> = await axios.get(`${contractUrl}/election/${electionId}`)
+
+            return Promise.resolve(res.data)
+        } catch (error) {
+
+            if (error.error) {
+                console.log('error error', error.error)
+                return Promise.reject(error.error)
+            }
+
+            return Promise.reject(error)
+        }
+    }
+
+    async emitVote(contractUrl: string, voteData: EmitVoteTransaction): Promise<Result> {
+        try {
+            const res: AxiosResponse<Result> = await axios.post(`${contractUrl}/vote/emit`, voteData)
 
             return Promise.resolve(res.data)
         } catch (error) {
