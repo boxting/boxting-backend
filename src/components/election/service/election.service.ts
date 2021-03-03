@@ -1,23 +1,25 @@
 // Error
 import { InternalError } from "../../../error/base.error";
 import { NotFoundError } from "../../../error/not.found.error";
+import { BadRequestError } from "../../../error/bad.request.error";
+import { NotPermittedError } from "../../../error/not.permitted.error";
 // Interface
 import { Result } from '../../../interface/result.interface';
 import { ElectionInterface } from '../interface/election.interface'
 import { Payload } from '../../../interface/request.interface'
+import { EmitVoteTransaction } from "../../contract/interface/transaction/emit.vote.interface";
 // Model
 import { Election } from '../model/election.model';
 // Utils
 import { clearData } from '../../../utils/clear.response';
+import { RoleEnum } from "../../../utils/role.enum";
+import { ContractManager } from "../../contract/util/cotract.manager";
+import { CryptoManager } from "../../../utils/crypto.manager";
 // Validators
 import { EventValidator } from '../../event/validator/event.validator'
-import { RoleEnum } from "../../../utils/role.enum";
 import { ElectionValidator } from "../validator/election.validator";
-import { Event } from "../../event/model/event.model";
-import { BadRequestError } from "../../../error/bad.request.error";
-import { NotPermittedError } from "../../../error/not.permitted.error";
-import { CryptoManager } from "../../../utils/crypto.manager";
-import { ContractManager } from "../../contract/util/cotract.manager";
+import { UserValidator } from "../../user/validator/user.validator";
+import { CandidateValidator } from "../../candidate/validator/candidate.validator";
 
 export class ElectionService implements ElectionInterface {
 
@@ -280,12 +282,7 @@ export class ElectionService implements ElectionInterface {
             const election = await ElectionValidator.checkIfExists(electionId)
 
             // Get event
-            const event = await Event.findByPk(election.eventId)
-
-            // Check if result is null
-            if (event == null) {
-                return Promise.reject(new NotFoundError(4001, "No event found."))
-            }
+            const event = await EventValidator.checkIfExists(election.eventId)
 
             // If user is not admin, validate ownership
             if (userPayload.role != RoleEnum.ADMIN) {
@@ -323,6 +320,79 @@ export class ElectionService implements ElectionInterface {
             // Send data to contract
             const contractManager = ContractManager.getInstace()
             const res = await contractManager.getElectionResults(contractUrl, electionId.toString())
+
+            return Promise.resolve(res)
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async emitVoteOnElection(userPayload: Payload, electionId: number, candidates: string[]): Promise<Result> {
+        try {
+            // Check if election exist
+            const election = await ElectionValidator.checkIfExists(electionId)
+
+            // Get user and validate if exist
+            const voter = await UserValidator.checkIfExists(userPayload.id)
+
+            // Get event
+            const event = await EventValidator.checkIfExists(election.eventId)
+
+            // Validate voter participation
+            await EventValidator.checkParticipation(event.id, voter.id)
+
+            // Check if event was already initiated
+            if (!event.configCompleted) {
+                return Promise.reject(new BadRequestError(9018, 'The event has not been initiated.'))
+            }
+
+            // Check if contract url exist
+            if (event.contract == undefined || event.contract == '') {
+                return Promise.reject(new BadRequestError(9015, 'A contract conecction has not been set yet.'))
+            }
+
+            // Validate date
+            const currentDate = Date.now()
+            const endDate = event.endDate.getTime()
+            const startDate = event.startDate.getTime()
+
+            if (currentDate < startDate || currentDate >= endDate) {
+                return Promise.reject(new NotPermittedError(10008, 'The election is not open to votes yet.'))
+            }
+
+            // Validate number of votes
+            if (candidates == undefined || candidates.length != election.winners) {
+                return Promise.reject(new BadRequestError(10010, 'The number of selected candidates is invalid.'))
+            }
+
+            // Validate selected candidates
+            for (let i = 0; i < candidates.length; i++) {
+                const candidateId = Number(candidates[i])
+                await CandidateValidator.checkIfExistOnElection(candidateId, electionId)
+            }
+
+            // Create data
+            const data: EmitVoteTransaction = {
+                candidateIds: candidates,
+                electionId: electionId.toString(),
+                voter: {
+                    firstName: voter.voter!.firstName,
+                    lastName: voter.voter!.lastName,
+                    id: voter.voter!.id.toString()
+                }
+            }
+
+            // Get the contract url
+            const cryptoManager = CryptoManager.getInstance()
+            const contractUrl = await cryptoManager.decrypt(event.contract)
+
+            // Send data to contract
+            const contractManager = ContractManager.getInstace()
+            const res = await contractManager.emitVote(contractUrl, data)
 
             return Promise.resolve(res)
         } catch (error) {
