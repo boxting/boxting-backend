@@ -45,6 +45,61 @@ export class EventService implements EventInterface {
         }
     }
 
+    async add(event: Event): Promise<Result> {
+        try {
+            // Add event
+            // Create method validates if the instance is correct before saving
+            let createdEvent = await Event.create(event)
+
+            // Remove null data
+            const res = clearData(createdEvent)
+
+            return Promise.resolve({ success: true, data: res })
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async deleteAll(): Promise<Result> {
+        try {
+            // Delete all events
+            let deleted = await Event.destroy({ where: {} })
+
+            return Promise.resolve({ success: true, data: `${deleted} objects deleted` })
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async delete(id: string): Promise<Result> {
+        try {
+            // Delete specific event by id
+            let deleted = await Event.destroy({ where: { id: id } })
+
+            return Promise.resolve({ success: (deleted != 0), data: `Object${(deleted == 0) ? ' not' : ''} deleted` })
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
+    async update(id: string, newEvent: Event): Promise<Result> {
+        try {
+            // Find event
+            const event = await EventValidator.checkIfExists(Number(id))
+
+            // Cannot update some fields
+            newEvent.contract = event.contract
+            newEvent.code = event.code
+            newEvent.configCompleted = event.configCompleted
+
+            const changes = await Event.update(newEvent, { where: { id: id } })
+
+            return Promise.resolve({ success: true, data: `Event updated with ${changes} change(s)` })
+        } catch (error) {
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
     async getById(id: string): Promise<Result> {
         try {
             // Get the event with specified id
@@ -79,22 +134,18 @@ export class EventService implements EventInterface {
 
     async getByIdWithRole(id: string, role: number, userId: number): Promise<Result> {
         try {
-            // Declare event
-            let event: Event | null = null
+            // Check if event exists
+            const event: Event = await EventValidator.checkIfExists(Number(id))
 
-            // Get event according to the user role
-            event = await Event.findByPk(id)
-
-            // Check if event was found
-            if (event == null) {
-                return Promise.reject(new NotFoundError(4001, "No event found with this id"))
-            }
-
-            // Validate relation between user and event
-            const relation: UserEvent | null = await UserEvent.findOne({ where: { userId: userId, eventId: id } })
-
-            if (relation == null) {
-                return Promise.reject(new NotPermittedError(4011, "You don't have access to this event."))
+            // If user is not admin, validate ownership or participation
+            if (role != RoleEnum.ADMIN) {
+                if (role == RoleEnum.VOTER) {
+                    // Validate if user is subscribed to the event
+                    await EventValidator.checkParticipation(Number(id), userId)
+                } else {
+                    // Validate if user is owner or collaborator of the event
+                    await EventValidator.checkUserOwnershipOrCollaboration(Number(id), userId)
+                }
             }
 
             // Remove null data
@@ -102,25 +153,25 @@ export class EventService implements EventInterface {
 
             return Promise.resolve({ success: true, data: res })
         } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
             return Promise.reject(new InternalError(500, error))
         }
     }
 
-    async createEvent(object: Event, userId: number): Promise<Result> {
+    async addWithRole(event: Event, userId: number): Promise<Result> {
         try {
-
             // Generate random unique event code
-            object.code = Math.random().toString(36).substr(2, 10)
+            event.code = Math.random().toString(36).substr(2, 10)
 
             // Check if event is valid before creating
-            let objEvent: Event = new Event(object)
+            let objEvent: Event = new Event(event)
             objEvent.validate()
 
-            // Get user
-            let user = await User.findByPk(userId)
-            if (user == null) {
-                return Promise.reject(new NotFoundError(3001, "No user found with this id"))
-            }
+            // Check if user exist
+            const user = await UserValidator.checkIfExists(userId)
 
             // Validate role of user
             if (user.roleId != RoleEnum.ORGANIZER) {
@@ -138,72 +189,65 @@ export class EventService implements EventInterface {
             }
 
             // Create event
-            let newEvent = await Event.create(object)
+            let newEvent: Event = (await this.add(event)).data as Event
+
+            // Create event relation with owner
             await UserEvent.create({ userId: userId, eventId: newEvent.id, isOwner: true })
 
             return Promise.resolve({ success: true, data: newEvent })
         } catch (error) {
 
-            let errorRes: Error
-
             if (error instanceof ValidationError) {
                 let msg = error.errors[0].message
-                errorRes = new BadRequestError(4009, msg)
-            } else {
-                errorRes = new InternalError(500, error)
+                return Promise.reject(new BadRequestError(4009, msg))
             }
-            return Promise.reject(errorRes)
+
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
         }
     }
 
     async deleteWithRole(id: string, role: number, userId: number): Promise<Result> {
         try {
             // Find event
-            const event = await Event.findOne({ where: { id: id } })
-
-            // Validate if an event was found
-            if (event == null) {
-                return Promise.reject(new NotFoundError(4001, "There is no event with the inserted id."))
-            }
+            const event = await EventValidator.checkIfExists(Number(id))
 
             // Validate dates
             if (event.startDate.getTime() <= Date.now() && event.endDate.getTime() > Date.now()) {
-                return Promise.reject(new BadRequestError(4002, "You can't delete a event that has already started."))
+                return Promise.reject(new BadRequestError(4016, "You can't delete a event that is in progress."))
             }
 
             // Check if an organizer is trying to delete the event, if not, it could only be an admin
             if (role == RoleEnum.ORGANIZER) {
-
-                // Check that the organizer is the owner of the event
-                const relation: UserEvent | null = await UserEvent.findOne({ where: { userId: userId, eventId: id } })
-
-                if (relation == null || !relation.isOwner) {
-                    return Promise.reject(new NotPermittedError(4003, "You can't delete a event that is not yours."))
-                }
+                await EventValidator.checkUserOwnership(Number(id), userId)
             }
 
             // Delete the event
-            await Event.destroy({ where: { id: id } })
+            await this.delete(id)
 
-            return Promise.resolve({ success: true, data: 'Object deleted' })
+            return Promise.resolve({ success: true, data: 'Event deleted' })
         } catch (error) {
+
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
             return Promise.reject(new InternalError(500, error))
         }
     }
 
-    async update(id: string, newEvent: Event): Promise<Result> {
-
+    async updateWithRole(id: string, newEvent: Event, role: number, userId: number): Promise<Result> {
         try {
-            // Find event with specified id
-            const event: Event | null = await Event.findOne({ where: { id: id } })
 
-            // Check if an event was found
-            if (event == null) {
-                return Promise.reject(new NotFoundError(4001, "There is no event with the inserted id."))
-            }
+            const event = await EventValidator.checkIfExistsAndStarted(Number(id))
 
-            if (event.startDate.getTime() <= Date.now()) {
-                return Promise.reject(new BadRequestError(4002, "You can't modify a event that has already started."))
+            // If user is not admin, validate ownership
+            if (role != RoleEnum.ADMIN) {
+                // Validate if user is owner or collaborator of the event
+                await EventValidator.checkUserOwnershipOrCollaboration(Number(id), userId)
             }
 
             // Validate dates
@@ -216,48 +260,17 @@ export class EventService implements EventInterface {
                 return Promise.reject(new BadRequestError(4005, "The end date cannot be before start date."))
             }
 
-            // Make inmutable values be equal to orginial values
-            newEvent.id = event.id
-            newEvent.code = event.code
-
             // Update event
-            let changes = await Event.update(newEvent, { where: { id: id } })
-
-            return Promise.resolve({ success: true, data: `Event updated with ${changes} change(s)` })
-        } catch (error) {
-            console.log(error)
-            return Promise.reject(new InternalError(500, error))
-        }
-    }
-
-    async updateWithRole(id: string, object: Event, role: number, userId: number): Promise<Result> {
-        try {
-
-            // If user is not an admin, we need to validate ownership
-            if (role == RoleEnum.ORGANIZER || role == RoleEnum.COLLABORATOR) {
-
-                const relation: UserEvent | null = await UserEvent.findOne({ where: { userId: userId, eventId: id } })
-
-                if (relation == null || (!relation.isOwner && !relation.isCollaborator)) {
-                    return Promise.reject(new NotPermittedError(4003, "You can't modify a event that is not yours."))
-                }
-            }
-
-            // Update event
-            const res = await this.update(id, object)
+            const res = await this.update(id, newEvent)
 
             return Promise.resolve(res)
         } catch (error) {
 
-            let errorRes: Error
-
-            if (error instanceof InternalError || error instanceof BadRequestError || error instanceof NotFoundError) {
-                errorRes = error
-            } else {
-                errorRes = new InternalError(500, error)
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
             }
 
-            return Promise.reject(errorRes)
+            return Promise.reject(new InternalError(500, error))
         }
     }
 
@@ -422,15 +435,5 @@ export class EventService implements EventInterface {
         }
     }
 
-    async add(object: Object): Promise<Result> {
-        throw new Error("Method not implemented.");
-    }
 
-    async deleteAll(): Promise<Result> {
-        throw new Error("Method not implemented.");
-    }
-
-    async delete(id: string): Promise<Result> {
-        throw new Error("Method not implemented.");
-    }
 }

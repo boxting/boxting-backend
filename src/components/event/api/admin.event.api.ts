@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
     handleGetAllEvents,
     handleGetEventById,
-    handleUpdateEvent,
+    handleUpdateEventWithToken,
     handleCreateEvent,
     handlesubscribeVoter
 } from "../controller/event.controller";
@@ -17,6 +17,6 @@ router.get('/all', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handle
 router.get('/id/:id/', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleGetEventById)
 router.post('/create', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleCreateEvent)
 router.post('/subscribe/voter', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handlesubscribeVoter)
-router.put('/id/:id', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleUpdateEvent)
+router.put('/id/:id', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleUpdateEventWithToken)
 
 export { router as adminEventApi }
