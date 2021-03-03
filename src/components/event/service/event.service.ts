@@ -2,7 +2,6 @@
 import { BadRequestError } from "../../../error/bad.request.error";
 import { InternalError } from "../../../error/base.error";
 import { NotFoundError } from "../../../error/not.found.error";
-import { NotPermittedError } from "../../../error/not.permitted.error";
 // Model
 import { AccessCode } from "../../codes/model/access.code.model";
 import { Event } from "../model/event.model";
@@ -22,6 +21,7 @@ import { ValidationError } from "sequelize";
 // Validators
 import { EventValidator } from "../validator/event.validator"
 import { UserValidator } from "../../user/validator/user.validator"
+import { CryptoManager } from "../../../utils/crypto.manager";
 
 export class EventService implements EventInterface {
 
@@ -130,7 +130,6 @@ export class EventService implements EventInterface {
             return Promise.reject(new InternalError(500, error))
         }
     }
-
 
     async getByIdWithRole(id: string, role: number, userId: number): Promise<Result> {
         try {
@@ -435,5 +434,29 @@ export class EventService implements EventInterface {
         }
     }
 
+    async updateContract(eventId: number, contractUrl: string): Promise<Result> {
+        try {
+            // Check if event exists
+            const event = await EventValidator.checkIfExists(eventId)
 
+            // Get crypto manager
+            const cryptoManager = CryptoManager.getInstance()
+
+            // Encrypt contract url
+            const encryptedContract = await cryptoManager.encrypt(contractUrl)
+
+            // Update event
+            event.contract = encryptedContract
+            await event.save()
+
+            return Promise.resolve({ success: true, data: 'New url saved.' })
+
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
 }
