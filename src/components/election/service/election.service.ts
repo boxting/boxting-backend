@@ -20,6 +20,7 @@ import { EventValidator } from '../../event/validator/event.validator'
 import { ElectionValidator } from "../validator/election.validator";
 import { UserValidator } from "../../user/validator/user.validator";
 import { CandidateValidator } from "../../candidate/validator/candidate.validator";
+import { ReadVoteTransaction } from "../../contract/interface/transaction/read.vote.interface";
 
 export class ElectionService implements ElectionInterface {
 
@@ -331,6 +332,65 @@ export class ElectionService implements ElectionInterface {
         }
     }
 
+    async getVote(userPayload: Payload, electionId: number): Promise<Result> {
+        try {
+            // Check if election exist
+            const election = await ElectionValidator.checkIfExists(electionId)
+
+            // Get user and validate if exist
+            const voter = await UserValidator.checkIfExists(userPayload.id)
+
+            // Get event
+            const event = await EventValidator.checkIfExists(election.eventId)
+
+            // Validate voter participation
+            await EventValidator.checkParticipation(event.id, userPayload.id)
+
+            // Check if event was already initiated
+            if (!event.configCompleted) {
+                return Promise.reject(new BadRequestError(9018, 'The event has not been initiated.'))
+            }
+
+            // Check if contract url exist
+            if (event.contract == undefined || event.contract == '') {
+                return Promise.reject(new BadRequestError(9015, 'A contract conecction has not been set yet.'))
+            }
+
+            // Validate date
+            const currentDate = Date.now()
+            const startDate = event.startDate.getTime()
+
+            if (currentDate < startDate) {
+                return Promise.resolve({ success: true, data: undefined })
+            }
+
+            const data: ReadVoteTransaction = {
+                electionId: electionId.toString(),
+                voter: {
+                    firstName: voter.voter!.firstName,
+                    lastName: voter.voter!.lastName,
+                    id: voter.voter!.dni
+                }
+            }
+
+            // Get the contract url
+            const cryptoManager = CryptoManager.getInstance()
+            const contractUrl = await cryptoManager.decrypt(event.contract)
+
+            // Send data to contract
+            const contractManager = ContractManager.getInstace()
+            const res = await contractManager.readVote(contractUrl, data)
+
+            return Promise.resolve(res)
+        } catch (error) {
+            if (error.errorCode != undefined) {
+                return Promise.reject(error)
+            }
+
+            return Promise.reject(new InternalError(500, error))
+        }
+    }
+
     async emitVoteOnElection(userPayload: Payload, electionId: number, candidates: string[]): Promise<Result> {
         try {
             // Check if election exist
@@ -382,7 +442,7 @@ export class ElectionService implements ElectionInterface {
                 voter: {
                     firstName: voter.voter!.firstName,
                     lastName: voter.voter!.lastName,
-                    id: voter.voter!.id.toString()
+                    id: voter.voter!.dni
                 }
             }
 
