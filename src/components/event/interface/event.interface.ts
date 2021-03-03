@@ -12,4 +12,5 @@ export interface EventInterface extends BaseInterface {
     getByIdWithRole(id: string, role: number, userId: number): Promise<Result>
     updateWithRole(id: string, object: Object, role: number, userId: number): Promise<Result>
     getAllUsersWithRole(eventId: number, userPayload: Payload, scope: 'voter' | 'collaborator'): Promise<Result>
+    initContract(eventId: number, userPayload: Payload): Promise<Result>
 }
