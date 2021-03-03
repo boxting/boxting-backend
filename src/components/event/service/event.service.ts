@@ -481,7 +481,7 @@ export class EventService implements EventInterface {
 
             // Check if event was already initiated
             if (event.configCompleted) {
-                return Promise.reject(new BadRequestError(9014, 'Contract has already been initited.'))
+                return Promise.reject(new BadRequestError(10001, 'Contract has already been initited.'))
             }
 
             // Check if contract url exist
