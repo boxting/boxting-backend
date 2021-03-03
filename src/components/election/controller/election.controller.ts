@@ -87,3 +87,15 @@ export async function handleDeleteAllElections(req: Request, res: Response, next
         next(error)
     }
 }
+
+export async function handleGetElectionResults(req: Request, res: Response, next: NextFunction) {
+    try {
+        const electionId = req.params.electionId
+        const tokenRequest = req as TokenRequest
+
+        const data = await electionService.getElectionResults(tokenRequest.user, Number(electionId))
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
