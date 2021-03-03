@@ -29,4 +29,20 @@ export class ContractManager {
             return Promise.reject(error)
         }
     }
+
+    async getElectionResults(contractUrl: string, electionId: string): Promise<Result> {
+        try {
+            const res: AxiosResponse<Result> = await axios.get(`${contractUrl}/election/${electionId}`)
+
+            return Promise.resolve(res.data)
+        } catch (error) {
+
+            if (error.error) {
+                console.log('error error', error.error)
+                return Promise.reject(error.error)
+            }
+
+            return Promise.reject(error)
+        }
+    }
 }
