@@ -107,7 +107,7 @@ export class Event extends Model<Event>{
             notEmpty: true
         }
     })
-    code!: String
+    code!: string
 
     @Column({
         allowNull: true,
@@ -116,7 +116,7 @@ export class Event extends Model<Event>{
             notEmpty: true
         }
     })
-    contract!: String
+    contract!: string
 
     @Column({
         allowNull: true,
