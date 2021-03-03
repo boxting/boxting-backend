@@ -216,3 +216,16 @@ export async function handleUpdateContract(req: Request, res: Response, next: Ne
         next(error)
     }
 }
+
+export async function handleInitContract(req: Request, res: Response, next: NextFunction) {
+    try {
+        const eventId = req.params.id
+        const tokenRequest = req as TokenRequest
+
+        const data = await events.initContract(Number(eventId), tokenRequest.user)
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
