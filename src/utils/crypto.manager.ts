@@ -31,7 +31,7 @@ export class CryptoManager {
 
     }
 
-    encrypt(value: string) {
+    encrypt(value: string): Promise<string> {
         try {
             // Initialize Cipher instance
             const cipher = crypto.createCipheriv(this.algorithm, this.key, this.iv)
@@ -44,13 +44,13 @@ export class CryptoManager {
             const finalPart = cipher.final("base64")
 
             // concat and return both parts
-            Promise.resolve(`${firstPart}${finalPart}`)
+            return Promise.resolve(`${firstPart}${finalPart}`)
         } catch (error) {
-            Promise.reject(error)
+            return Promise.reject(error)
         }
     }
 
-    decrypt(value: string) {
+    decrypt(value: string): Promise<string> {
         try {
             // Initialize Decipher instance
             const decipher = crypto.createDecipheriv(this.algorithm, this.key, this.iv)
@@ -63,9 +63,9 @@ export class CryptoManager {
             const finalPart = decipher.final('utf8') || ''
 
             // concat and return both parts
-            Promise.resolve(`${firstPart}${finalPart}`)
+            return Promise.resolve(`${firstPart}${finalPart}`)
         } catch (error) {
-            Promise.reject(error)
+            return Promise.reject(error)
 
         }
     }
