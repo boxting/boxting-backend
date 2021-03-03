@@ -112,3 +112,15 @@ export async function handleEmitVote(req: Request, res: Response, next: NextFunc
         next(error)
     }
 }
+
+export async function handleReadVote(req: Request, res: Response, next: NextFunction) {
+    try {
+        const electionId = req.params.electionId
+        const tokenRequest = req as TokenRequest
+
+        const data = await electionService.getVote(tokenRequest.user, Number(electionId))
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
