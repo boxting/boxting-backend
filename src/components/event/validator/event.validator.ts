@@ -21,6 +21,10 @@ export class EventValidator {
                 return Promise.reject(new BadRequestError(4002, "You can't modify a event that has already started."))
             }
 
+            if (event.configCompleted) {
+                return Promise.reject(new BadRequestError(4017, "You can't modify a event with configuration completed."))
+            }
+
             return Promise.resolve(event)
         } catch (error) {
 
