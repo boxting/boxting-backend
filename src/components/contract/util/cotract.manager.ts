@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from "axios"
 import { Result } from "../../../interface/result.interface"
 import { EmitVoteTransaction } from "../interface/transaction/emit.vote.interface"
 import { InitTransaction } from "../interface/transaction/init.transaction.interface"
+import { ReadVoteTransaction } from "../interface/transaction/read.vote.interface"
 
 export class ContractManager {
 
@@ -50,6 +51,22 @@ export class ContractManager {
     async emitVote(contractUrl: string, voteData: EmitVoteTransaction): Promise<Result> {
         try {
             const res: AxiosResponse<Result> = await axios.post(`${contractUrl}/vote/emit`, voteData)
+
+            return Promise.resolve(res.data)
+        } catch (error) {
+
+            if (error.error) {
+                console.log('error error', error.error)
+                return Promise.reject(error.error)
+            }
+
+            return Promise.reject(error)
+        }
+    }
+
+    async readVote(contractUrl: string, voteData: ReadVoteTransaction): Promise<Result> {
+        try {
+            const res: AxiosResponse<Result> = await axios.post(`${contractUrl}/vote/get`, voteData)
 
             return Promise.resolve(res.data)
         } catch (error) {
