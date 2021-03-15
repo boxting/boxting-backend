@@ -10,4 +10,5 @@ export interface ElectionInterface extends BaseInterface {
     getByIdWithRole(userPayload: Payload, eventId: number, electionId: number): Promise<Result>
     updateWithRole(userPayload: Payload, eventId: number, electionId: number, election: Election): Promise<Result>
     deleteWithRole(userPayload: Payload, eventId: number, electionId: number): Promise<Result>
+    getElectionResults(userPayload: Payload, electionId: number): Promise<Result>
 }

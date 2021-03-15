@@ -2,9 +2,10 @@ import { Router } from "express";
 import {
     handleGetAllEvents,
     handleGetEventById,
-    handleUpdateEvent,
+    handleUpdateEventWithToken,
     handleCreateEvent,
-    handlesubscribeVoter
+    handlesubscribeVoter,
+    handleUpdateContract
 } from "../controller/event.controller";
 
 import { authenticateToken } from "../../../middleware/jwt.middleware";
@@ -17,6 +18,7 @@ router.get('/all', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handle
 router.get('/id/:id/', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleGetEventById)
 router.post('/create', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleCreateEvent)
 router.post('/subscribe/voter', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handlesubscribeVoter)
-router.put('/id/:id', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleUpdateEvent)
+router.put('/id/:id', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleUpdateEventWithToken)
+router.put('/id/:id/contract', authenticateToken, authenticateRole([RoleEnum.ADMIN]), handleUpdateContract)
 
 export { router as adminEventApi }

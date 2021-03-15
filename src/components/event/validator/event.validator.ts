@@ -21,6 +21,10 @@ export class EventValidator {
                 return Promise.reject(new BadRequestError(4002, "You can't modify a event that has already started."))
             }
 
+            if (event.configCompleted) {
+                return Promise.reject(new BadRequestError(4017, "You can't modify a event with configuration completed."))
+            }
+
             return Promise.resolve(event)
         } catch (error) {
 
@@ -50,7 +54,7 @@ export class EventValidator {
             const relation: UserEvent | null = await UserEvent.findOne({ where: { userId: userId, eventId: eventId } })
 
             if (relation == null || (!relation.isOwner && !relation.isCollaborator)) {
-                return Promise.reject(new NotPermittedError(4003, "You can't modify a event that is not yours."))
+                return Promise.reject(new NotPermittedError(4011, "You don't have access to this event."))
             }
 
             return Promise.resolve(true)

@@ -107,7 +107,23 @@ export class Event extends Model<Event>{
             notEmpty: true
         }
     })
-    code!: String
+    code!: string
+
+    @Column({
+        allowNull: true,
+        unique: false,
+        validate: {
+            notEmpty: true
+        }
+    })
+    contract!: string
+
+    @Column({
+        allowNull: true,
+        unique: false,
+        defaultValue: false
+    })
+    configCompleted!: boolean
 
     @CreatedAt
     createdAt!: Date

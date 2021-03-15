@@ -53,18 +53,6 @@ export async function handleGetEventByIdWithToken(req: Request, res: Response, n
     }
 }
 
-export async function handleUpdateEvent(req: Request, res: Response, next: NextFunction) {
-    try {
-        let id = req.params.id
-        let event: Event = req.body
-        const data = await events.update(id, event)
-
-        res.status(Status.OK).send(data)
-    } catch (error) {
-        next(error)
-    }
-}
-
 export async function handleUpdateEventWithToken(req: Request, res: Response, next: NextFunction) {
     try {
         let id = req.params.id
@@ -85,7 +73,7 @@ export async function handleUpdateEventWithToken(req: Request, res: Response, ne
 export async function handleCreateEvent(req: Request, res: Response, next: NextFunction) {
     try {
         let { organizerId, event } = req.body
-        const data = await events.createEvent(event, organizerId)
+        const data = await events.addWithRole(event, organizerId)
 
         res.status(Status.OK).send(data)
     } catch (error) {
@@ -100,7 +88,7 @@ export async function handleCreateEventWithToken(req: Request, res: Response, ne
         const tokenRequest = req as TokenRequest
         const userId = tokenRequest.user.id
 
-        const data = await events.createEvent(event, userId)
+        const data = await events.addWithRole(event, userId)
 
         res.status(Status.OK).send(data)
     } catch (error) {
@@ -209,6 +197,32 @@ export async function handleGetAllCollaborators(req: Request, res: Response, nex
         const tokenRequest = req as TokenRequest
 
         const data = await events.getAllUsersWithRole(Number(eventId), tokenRequest.user, 'collaborator')
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleUpdateContract(req: Request, res: Response, next: NextFunction) {
+    try {
+        const eventId = req.params.id
+        const { contractUrl } = req.body
+
+        const data = await events.updateContract(Number(eventId), contractUrl)
+
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleInitContract(req: Request, res: Response, next: NextFunction) {
+    try {
+        const eventId = req.params.id
+        const tokenRequest = req as TokenRequest
+
+        const data = await events.initContract(Number(eventId), tokenRequest.user)
 
         res.status(Status.OK).send(data)
     } catch (error) {

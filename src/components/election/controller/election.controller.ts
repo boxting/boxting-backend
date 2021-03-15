@@ -87,3 +87,40 @@ export async function handleDeleteAllElections(req: Request, res: Response, next
         next(error)
     }
 }
+
+export async function handleGetElectionResults(req: Request, res: Response, next: NextFunction) {
+    try {
+        const electionId = req.params.electionId
+        const tokenRequest = req as TokenRequest
+
+        const data = await electionService.getElectionResults(tokenRequest.user, Number(electionId))
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleEmitVote(req: Request, res: Response, next: NextFunction) {
+    try {
+        const electionId = req.params.electionId
+        const tokenRequest = req as TokenRequest
+        const { candidates } = req.body
+
+        const data = await electionService.emitVoteOnElection(tokenRequest.user, Number(electionId), candidates)
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function handleReadVote(req: Request, res: Response, next: NextFunction) {
+    try {
+        const electionId = req.params.electionId
+        const tokenRequest = req as TokenRequest
+
+        const data = await electionService.getVote(tokenRequest.user, Number(electionId))
+        res.status(Status.OK).send(data)
+    } catch (error) {
+        next(error)
+    }
+}

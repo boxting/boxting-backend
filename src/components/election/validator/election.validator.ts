@@ -21,6 +21,10 @@ export class ElectionValidator {
                 return Promise.reject(new BadRequestError(6003, "You can't modify a election that has already started."))
             }
 
+            if (election.event!.configCompleted) {
+                return Promise.reject(new BadRequestError(4017, "You can't modify a event with configuration completed."))
+            }
+
             return Promise.resolve(election)
         } catch (error) {
 

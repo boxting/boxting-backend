@@ -10,7 +10,8 @@ import {
     handleGetAllCollaborators,
     handleGetAllVoters,
     handleUnsubscribeVoterWithToken,
-    handleUnsubscribeUser
+    handleUnsubscribeUser,
+    handleInitContract
 } from "../controller/event.controller";
 import { authenticateToken } from "../../../middleware/jwt.middleware";
 import { authenticateRole } from "../../../middleware/role.middleware";
@@ -50,5 +51,7 @@ router.delete('/:id/unsubscribe/voter', authenticateToken,
 router.delete('/:id/unsubscribe/user/:userId', authenticateToken,
     authenticateRole([RoleEnum.ORGANIZER]), handleUnsubscribeUser)
 
+router.post('/:id/contract/init', authenticateToken,
+    authenticateRole([RoleEnum.ORGANIZER, RoleEnum.ADMIN]), handleInitContract)
 
 export { router as eventApi }
