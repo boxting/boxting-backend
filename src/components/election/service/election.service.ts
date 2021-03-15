@@ -21,6 +21,8 @@ import { ElectionValidator } from "../validator/election.validator";
 import { UserValidator } from "../../user/validator/user.validator";
 import { CandidateValidator } from "../../candidate/validator/candidate.validator";
 import { ReadVoteTransaction } from "../../contract/interface/transaction/read.vote.interface";
+import { Event } from "../../event/model/event.model";
+import { User } from "../../user/model/user.model";
 
 export class ElectionService implements ElectionInterface {
 
@@ -143,7 +145,7 @@ export class ElectionService implements ElectionInterface {
         try {
 
             // Check if event exists
-            await EventValidator.checkIfExists(eventId)
+            const event: Event = await EventValidator.checkIfExists(eventId)
 
             // If user is not admin, validate ownership or participation
             if (userPayload.role != RoleEnum.ADMIN) {
@@ -157,7 +159,39 @@ export class ElectionService implements ElectionInterface {
             }
 
             // Get all the elections from Event
-            let res = await this.getFromEvent(eventId)
+            const res = await this.getFromEvent(eventId)
+
+            // Validate if user voted
+            if (userPayload.role == RoleEnum.VOTER) {
+
+                if (event.contract != undefined) {
+                    // Get user with id
+                    const user = await User.scope('full').findByPk(userPayload.id)
+                    console.log('calling crypto')
+                    // Get the contract url
+                    const cryptoManager = CryptoManager.getInstance()
+                    const contractUrl = await cryptoManager.decrypt(event.contract)
+
+                    // Send data to contract
+                    const contractManager = ContractManager.getInstace()
+                    const contractResponse = await contractManager.getVotedElections(contractUrl, user!.voter!.dni.toString())
+
+                    // Get voted elections
+                    const votedElections = contractResponse.data as string[]
+
+                    for (let i = 0; i < res.data.length; i++) {
+                        const electionId = res.data[i].id;
+
+                        let index = votedElections.findIndex((value) => value.toString() == electionId.toString())
+
+                        res.data[i].userVoted = (index != -1)
+                    }
+                } else {
+                    for (let i = 0; i < res.data.length; i++) {
+                        res.data[i].userVoted = false
+                    }
+                }
+            }
 
             return Promise.resolve(res)
         } catch (error) {
@@ -201,7 +235,7 @@ export class ElectionService implements ElectionInterface {
         try {
 
             // Check if event exists
-            await EventValidator.checkIfExists(eventId)
+            const event: Event = await EventValidator.checkIfExists(eventId)
 
             // If user is not admin, validate ownership or participation
             if (userPayload.role != RoleEnum.ADMIN) {
@@ -215,7 +249,35 @@ export class ElectionService implements ElectionInterface {
             }
 
             // Get election
-            let res = await this.getById(electionId.toString())
+            const res = await this.getById(electionId.toString())
+
+            // Validate if user voted
+            if (userPayload.role == RoleEnum.VOTER) {
+
+                res.data!.userVoted = false
+
+                if (event.contract != undefined) {
+                    // Get user with id
+                    const user = await User.scope('full').findByPk(userPayload.id)
+
+                    // Get the contract url
+                    const cryptoManager = CryptoManager.getInstance()
+                    const contractUrl = await cryptoManager.decrypt(event.contract)
+
+                    // Send data to contract
+                    const contractManager = ContractManager.getInstace()
+                    const contractResponse = await contractManager.getVotedElections(contractUrl, user!.voter!.dni.toString())
+
+                    // Get voted elections
+                    const votedElections = contractResponse.data as string[]
+
+                    let index = votedElections.findIndex((value) => value.toString() == electionId.toString())
+
+                    if (index != -1) {
+                        res.data!.userVoted = true
+                    }
+                }
+            }
 
             return Promise.resolve(res)
         } catch (error) {

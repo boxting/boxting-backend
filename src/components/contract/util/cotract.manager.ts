@@ -79,4 +79,20 @@ export class ContractManager {
             return Promise.reject(error)
         }
     }
+
+    async getVotedElections(contractUrl: string, voterId: string): Promise<Result> {
+        try {
+            const res: AxiosResponse<Result> = await axios.get(`${contractUrl}/voter/${voterId}/voted/`)
+
+            return Promise.resolve(res.data)
+        } catch (error) {
+
+            if (error.error) {
+                console.log('error error', error.error)
+                return Promise.reject(error.error)
+            }
+
+            return Promise.reject(error)
+        }
+    }
 }
