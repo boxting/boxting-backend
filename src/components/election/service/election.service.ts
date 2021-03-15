@@ -167,7 +167,7 @@ export class ElectionService implements ElectionInterface {
                 if (event.contract != undefined) {
                     // Get user with id
                     const user = await User.scope('full').findByPk(userPayload.id)
-
+                    console.log('calling crypto')
                     // Get the contract url
                     const cryptoManager = CryptoManager.getInstance()
                     const contractUrl = await cryptoManager.decrypt(event.contract)
@@ -184,9 +184,7 @@ export class ElectionService implements ElectionInterface {
 
                         let index = votedElections.findIndex((value) => value.toString() == electionId.toString())
 
-                        if (index != -1) {
-                            res.data[i].userVoted = true
-                        }
+                        res.data[i].userVoted = (index != -1)
                     }
                 } else {
                     for (let i = 0; i < res.data.length; i++) {
