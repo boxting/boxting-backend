@@ -23,7 +23,7 @@ export class List extends Model<List>{
         unique: false,
         validate: {
             notEmpty: true,
-            len: [3, 255]
+            len: [3, 100]
         }
     })
     name!: string
@@ -33,7 +33,7 @@ export class List extends Model<List>{
         unique: false,
         validate: {
             notEmpty: true,
-            len: [3, 255]
+            len: [3, 1000]
         }
     })
     information!: string
@@ -43,7 +43,7 @@ export class List extends Model<List>{
         unique: false,
         validate: {
             notEmpty: true,
-            len: [3, 255]
+            len: [3, 500]
         }
     })
     imageUrl!: string

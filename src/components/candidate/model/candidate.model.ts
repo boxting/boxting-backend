@@ -39,7 +39,7 @@ export class Candidate extends Model<Candidate>{
         unique: false,
         validate: {
             notEmpty: true,
-            len: [3, 500]
+            len: [3, 1000]
         }
     })
     information!: string
@@ -58,7 +58,7 @@ export class Candidate extends Model<Candidate>{
         unique: false,
         validate: {
             notEmpty: true,
-            len: [3, 255]
+            len: [3, 500]
         }
     })
     imageUrl!: string

@@ -77,7 +77,7 @@ export class Event extends Model<Event>{
         allowNull: false,
         validate: {
             notEmpty: true,
-            len: [3, 500]
+            len: [3, 1000]
         }
     })
     information!: string

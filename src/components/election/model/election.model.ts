@@ -24,7 +24,7 @@ export class Election extends Model<Election>{
         unique: false,
         validate: {
             notEmpty: true,
-            len: [3, 255]
+            len: [3, 100]
         }
     })
     name!: string
@@ -34,7 +34,7 @@ export class Election extends Model<Election>{
         unique: false,
         validate: {
             notEmpty: true,
-            len: [3, 255]
+            len: [3, 1000]
         }
     })
     information!: string
