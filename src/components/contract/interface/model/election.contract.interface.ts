@@ -3,4 +3,5 @@ export interface ElectionContract {
     eventId: string
     electionType: 'single' | 'multiple'
     maxVotes: number
+    name: string
 }

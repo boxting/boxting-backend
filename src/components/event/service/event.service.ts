@@ -509,7 +509,8 @@ export class EventService implements EventInterface {
                     electionType: (election.typeId == TypeEnum.SINGLE) ? 'single' : 'multiple',
                     eventId: election.eventId.toString(),
                     id: election.id.toString(),
-                    maxVotes: election.winners
+                    maxVotes: election.winners,
+                    name: election.name
                 })
 
                 // Get election candidates
