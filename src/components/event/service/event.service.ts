@@ -299,6 +299,9 @@ export class EventService implements EventInterface {
                 return Promise.reject(new NotFoundError(4007, "There is no event with the inserted code."))
             }
 
+            //Check if user is not already on event
+            await EventValidator.checkIfUserIsAlreadySubscribed(Number(event.id!), userId)
+
             //Check if access code exists
             let existingCode = await AccessCode.findOne({ where: { eventId: event.id, code: accessCode } })
 
