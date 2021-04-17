@@ -185,7 +185,7 @@ export class LoginService implements LoginInterface {
 
             let res = await axios.get(URL, { httpsAgent })
 
-            if (res.data == null) {
+            if (res.data == null || res.data.error) {
                 return Promise.reject(new BadRequestError(2009, "No matching ID information was found"))
             }
 
