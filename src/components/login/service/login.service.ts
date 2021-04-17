@@ -189,6 +189,10 @@ export class LoginService implements LoginInterface {
                 return Promise.reject(new BadRequestError(2009, "No matching ID information was found"))
             }
 
+            const voter = await Voter.findOne({ where: { dni: dni } })
+
+            res.data.used = (voter != null)
+            
             return Promise.resolve({ success: true, data: res.data })
 
         } catch (error) {
