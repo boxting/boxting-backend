@@ -1,4 +1,5 @@
 import { Response, NextFunction } from 'express'
+import { UnauthorizedError } from '../error/unauthorized.error';
 import { TokenManager } from '../utils/token.manager'
 
 const tokenManager = TokenManager.getInstance()
@@ -10,7 +11,7 @@ export async function authenticateToken(req: any, res: Response, next: NextFunct
 
     // Validate that auth header has a value
     if (authHeader == undefined) {
-        return res.status(401).send({ 'success': false, 'error': 'No token found in authorization header, no authorized' });
+        return res.status(401).send({ 'success': false, 'error': new UnauthorizedError(401) });
     }
 
     // Split the auth header to verify both parts
@@ -18,7 +19,7 @@ export async function authenticateToken(req: any, res: Response, next: NextFunct
 
     // Check if the first part is te Bearer validator
     if (authSplit[0] != 'Bearer') {
-        return res.status(401).send({ 'success': false, 'error': 'Invalid token in authorization header' });
+        return res.status(401).send({ 'success': false, 'error': new UnauthorizedError(401) });
     }
 
     // Assign second part to token variable
@@ -31,6 +32,6 @@ export async function authenticateToken(req: any, res: Response, next: NextFunct
         next()
     } catch (error) {
         // Token is not valid
-        return res.status(401).send({ 'success': false, 'error': 'Invalid token in authorization header' });
+        return res.status(401).send({ 'success': false, 'error': new UnauthorizedError(401) });
     }
 }

@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { NotPermittedError } from '../error/not.permitted.error';
 import { TokenRequest } from '../interface/request.interface';
 
 
@@ -7,7 +8,7 @@ export function authenticateRole(roles: number[]) {
         const tokenRequest = req as TokenRequest
 
         if (roles.indexOf(tokenRequest.user.role) == -1) {
-            return res.status(403).send({ 'success': false, 'error': 'You do not have the permission to get this data.' });
+            return res.status(403).send({ 'success': false, 'error': new NotPermittedError(403) });
         }
 
         next()
