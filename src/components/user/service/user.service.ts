@@ -70,7 +70,7 @@ export class UserService implements UserInterface {
             }
 
             // Remove null data
-            const res = clearData(user)
+            const res = user
 
             return Promise.resolve({ success: true, data: res })
         } catch (error) {
