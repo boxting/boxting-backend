@@ -305,7 +305,7 @@ export class EventService implements EventInterface {
             //Check if access code exists
             let existingCode = await AccessCode.findOne({ where: { eventId: event.id, code: accessCode } })
 
-            if (existingCode == null) {
+            if (existingCode == null || existingCode.used) {
                 return Promise.reject(new BadRequestError(4008, "The access code is invalid for this event."))
             }
 
