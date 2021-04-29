@@ -192,7 +192,7 @@ export class LoginService implements LoginInterface {
             const voter = await Voter.findOne({ where: { dni: dni } })
 
             res.data.used = (voter != null)
-            
+
             return Promise.resolve({ success: true, data: res.data })
 
         } catch (error) {
@@ -303,10 +303,18 @@ export class LoginService implements LoginInterface {
 
             await PasswordToken.create(tokenOptions)
 
-            // Get user name for email
-            let firstName = user.voter?.firstName.split(' ')[0]
-            let firstLastName = user.voter?.lastName.split(' ')[0]
-            let name = firstName + ' ' + firstLastName
+            let name = ''
+
+            // Set content according to user role
+            if (user.roleId == RoleEnum.ORGANIZER || user.roleId == RoleEnum.COLLABORATOR) {
+                name = user.organizer?.name + ''
+            } else if (user.roleId == RoleEnum.VOTER) {
+                let firstName = user.voter?.firstName.split(' ')[0]
+                let firstLastName = user.voter?.lastName.split(' ')[0]
+                name = firstName + ' ' + firstLastName
+            } else {
+                name = `Boxting Admin ${user.username}`
+            }
 
             // Send mail using mailing service
             await this.mailingService.sendRecoverPasswordMail(userMail, newToken, name)
