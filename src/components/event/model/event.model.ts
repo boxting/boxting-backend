@@ -1,4 +1,4 @@
-import { Table, Model, Column, CreatedAt, UpdatedAt, Scopes, BelongsToMany, HasMany } from "sequelize-typescript"
+import { Table, Model, Column, CreatedAt, UpdatedAt, Scopes, BelongsToMany, HasMany, DataType } from "sequelize-typescript"
 import { AccessCode } from "../../codes/model/access.code.model"
 import { Organizer } from "../../user/model/organizer.model"
 import { Role } from "../../role/model/role.model"
@@ -6,6 +6,7 @@ import { UserEvent } from "./user.event.model"
 import { User } from "../../user/model/user.model"
 import { Voter } from "../../user/model/voter.model"
 import { Election } from "../../election/model/election.model"
+import { getEventStatus } from "../../../utils/event.status"
 
 @Scopes(() => ({
     voter: {
@@ -124,6 +125,11 @@ export class Event extends Model<Event>{
         defaultValue: false
     })
     configCompleted!: boolean
+
+    @Column(DataType.VIRTUAL)
+    get eventStatus() {
+        return getEventStatus(this.getDataValue('startDate'), this.getDataValue('endDate'), this.getDataValue('configCompleted'))
+    }
 
     @CreatedAt
     createdAt!: Date

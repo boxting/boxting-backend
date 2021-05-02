@@ -35,7 +35,7 @@ export class ElectionValidator {
     public static async checkIfExists(electionId: number) {
         try {
             // Find election with specified id
-            const election: Election | null = await Election.findOne({ where: { id: electionId } })
+            const election: Election | null = await Election.scope('event').findOne({ where: { id: electionId } })
 
             // Check if an election was found
             if (election == null) {

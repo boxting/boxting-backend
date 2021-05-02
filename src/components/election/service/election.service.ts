@@ -122,7 +122,7 @@ export class ElectionService implements ElectionInterface {
     async getFromEvent(eventId: number) {
         try {
             // Check if event exists
-            await EventValidator.checkIfExists(eventId)
+            const event: Event = await EventValidator.checkIfExists(eventId)
 
             // Find all elections
             let elections = await Election.findAll({ where: { eventId: eventId } })
@@ -130,7 +130,12 @@ export class ElectionService implements ElectionInterface {
             // Remove null data
             const res = clearData(elections)
 
-            return Promise.resolve({ success: true, data: res })
+            const data = {
+                eventStatus: event.eventStatus,
+                elements: res
+            }
+
+            return Promise.resolve({ success: true, data })
         } catch (error) {
 
             if (error.errorCode != undefined) {
@@ -164,10 +169,12 @@ export class ElectionService implements ElectionInterface {
             // Validate if user voted
             if (userPayload.role == RoleEnum.VOTER) {
 
+                let elements = res.data.elements
+
                 if (event.contract != undefined) {
                     // Get user with id
                     const user = await User.scope('full').findByPk(userPayload.id)
-                    console.log('calling crypto')
+
                     // Get the contract url
                     const cryptoManager = CryptoManager.getInstance()
                     const contractUrl = await cryptoManager.decrypt(event.contract)
@@ -179,18 +186,20 @@ export class ElectionService implements ElectionInterface {
                     // Get voted elections
                     const votedElections = contractResponse.data as string[]
 
-                    for (let i = 0; i < res.data.length; i++) {
-                        const electionId = res.data[i].id;
+                    for (let i = 0; i < elements.length; i++) {
+                        const electionId = elements[i].id;
 
                         let index = votedElections.findIndex((value) => value.toString() == electionId.toString())
 
-                        res.data[i].userVoted = (index != -1)
+                        elements[i].userVoted = (index != -1)
                     }
                 } else {
-                    for (let i = 0; i < res.data.length; i++) {
-                        res.data[i].userVoted = false
+                    for (let i = 0; i < elements.length; i++) {
+                        elements[i].userVoted = false
                     }
                 }
+
+                res.data.elements = elements
             }
 
             return Promise.resolve(res)
@@ -198,7 +207,6 @@ export class ElectionService implements ElectionInterface {
             if (error.errorCode != undefined) {
                 return Promise.reject(error)
             }
-
             return Promise.reject(new InternalError(500, error))
         }
     }
@@ -250,6 +258,7 @@ export class ElectionService implements ElectionInterface {
 
             // Get election
             const res = await this.getById(electionId.toString())
+            res.data.eventStatus = event.eventStatus
 
             // Validate if user voted
             if (userPayload.role == RoleEnum.VOTER) {

@@ -109,7 +109,7 @@ export class ListService implements ListInterface {
     async getFromElection(electionId: number) {
         try {
             // Check if election exists
-            await ElectionValidator.checkIfExists(electionId)
+            const election = await ElectionValidator.checkIfExists(electionId)
 
             // Find all lists
             let lists = await List.findAll({ where: { electionId: electionId } })
@@ -117,7 +117,12 @@ export class ListService implements ListInterface {
             // Remove null data
             const res = clearData(lists)
 
-            return Promise.resolve({ success: true, data: res })
+            const data = {
+                eventStatus: election.event!.eventStatus,
+                elements: res
+            }
+
+            return Promise.resolve({ success: true, data })
         } catch (error) {
 
             if (error.errorCode != undefined) {
@@ -205,6 +210,8 @@ export class ListService implements ListInterface {
 
             // Get list
             let res = await this.getById(listId.toString())
+
+            res.data.eventStatus = election.event!.eventStatus
 
             return Promise.resolve(res)
         } catch (error) {

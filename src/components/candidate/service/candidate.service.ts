@@ -134,7 +134,7 @@ export class CandidateService implements CandidateInterface {
     async getFromElection(electionId: number) {
         try {
             // Check if election exists
-            await ElectionValidator.checkIfExists(electionId)
+            const election = await ElectionValidator.checkIfExists(electionId)
 
             // Find all candidates
             let candidates = await Candidate.scope('list').findAll({ where: { electionId: electionId } })
@@ -142,7 +142,12 @@ export class CandidateService implements CandidateInterface {
             // Remove null data
             const res = clearData(candidates)
 
-            return Promise.resolve({ success: true, data: res })
+            const data = {
+                eventStatus: election.event!.eventStatus,
+                elements: res
+            }
+
+            return Promise.resolve({ success: true, data })
         } catch (error) {
 
             if (error.errorCode != undefined) {
@@ -291,6 +296,8 @@ export class CandidateService implements CandidateInterface {
 
             // Get candidate
             let res = await this.getById(candidateId.toString())
+
+            res.data.eventStatus = election.event!.eventStatus
 
             return Promise.resolve(res)
         } catch (error) {
