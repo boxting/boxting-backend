@@ -173,29 +173,33 @@ export class LoginService implements LoginInterface {
     async getDniInformation(dni: string): Promise<Result> {
 
         try {
-            const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
-            let BASE = "https://api.reniec.cloud/dni/"
+            if (process.env.ID_SERVICE_URL == undefined) {
+                return Promise.reject(new InternalError(500, "The identification service is unavailable."))
+            }
+
+            let BASE = process.env.ID_SERVICE_URL
 
             if (dni.trim().length == 0 || dni.trim().length < 8) {
                 return Promise.reject(new BadRequestError(2008, "The ID length is incorrect"))
             }
 
-            let URL = BASE + dni
-
-            let res = await axios.get(URL, { httpsAgent })
-
-            if (res.data == null || res.data.error) {
-                return Promise.reject(new BadRequestError(2009, "No matching ID information was found"))
-            }
+            let res = await axios.get(`${BASE}/api/peru/dni/${dni}`)
 
             const voter = await Voter.findOne({ where: { dni: dni } })
 
-            res.data.used = (voter != null)
+            res.data.data.used = (voter != null)
 
-            return Promise.resolve({ success: true, data: res.data })
+            return Promise.resolve(res.data as Result)
 
         } catch (error) {
+
+            if (axios.isAxiosError(error)) {
+                let errorData = error.response!.data
+                return (errorData.success != undefined) ?
+                    Promise.reject(errorData.error) : Promise.reject(new InternalError(500, error.message))
+            }
+
             return Promise.reject(new InternalError(500, error))
         }
 
