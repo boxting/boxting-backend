@@ -377,11 +377,11 @@ export class ElectionService implements ElectionInterface {
                 return Promise.reject(new BadRequestError(9015, 'A contract conecction has not been set yet.'))
             }
 
-            // Validate date
+            // Validate date only on voters
             const currentDate = Date.now()
             const endDate = event.endDate.getTime()
 
-            if (currentDate < endDate) {
+            if (userPayload.role == RoleEnum.VOTER && currentDate < endDate) {
                 return Promise.reject(new NotPermittedError(10004, 'The event has not finished yet.'))
             }
 
