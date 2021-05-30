@@ -105,8 +105,7 @@ export async function handleEmitVote(req: Request, res: Response, next: NextFunc
         const electionId = req.params.electionId
         const tokenRequest = req as TokenRequest
         const { candidates } = req.body
-        console.log(candidates)
-        console.log(req.body)
+        
         const data = await electionService.emitVoteOnElection(tokenRequest.user, Number(electionId), candidates)
         res.status(Status.OK).send(data)
     } catch (error) {

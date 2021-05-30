@@ -494,9 +494,7 @@ export class ElectionService implements ElectionInterface {
             if (currentDate < startDate || currentDate >= endDate) {
                 return Promise.reject(new NotPermittedError(10008, 'The election is not open to votes yet.'))
             }
-            console.log(candidates)
-            console.log(election.winners)
-            console.log(election.id)
+            
             // Validate number of votes
             if (candidates == undefined || candidates.length != election.winners) {
                 return Promise.reject(new BadRequestError(10010, 'The number of selected candidates is invalid.'))

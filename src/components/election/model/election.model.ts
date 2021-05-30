@@ -5,12 +5,14 @@ import { Type } from "../../type/model/type.model"
 
 @Scopes(() => ({
     event: {
-        attributes: ["id", "name", "eventId"],
+        attributes: {
+            exclude: ["updatedAt", "createdAt"],
+        },
         include: [
             {
                 model: Event,
                 attributes: {
-                    include: ["id", "startDate", "endDate"],
+                    exclude: ["updatedAt", "createdAt"],
                 }
             }
         ]
