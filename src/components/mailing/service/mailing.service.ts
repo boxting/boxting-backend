@@ -55,9 +55,9 @@ export class MailingService {
             let htmlToSend = template(replacements);
 
             let mailOptions: Mail.Options = {
-                from: hostMail,
+                from: `Soporte de Boxting <${hostMail}>`,
                 to: userMail,
-                subject: 'Boxting - Forgot Password',
+                subject: 'Recupera tu contraseña',
                 html: htmlToSend
             }
 
